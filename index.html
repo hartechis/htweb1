@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聚大智能員工登入系統</title>
+    <style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /*88 使用 min-height 確保手機上捲動正常 */
+        background-color: #002d72;
+        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        padding: 20px; /* 手機版邊緣留白 */
+    }
+    
+    .login-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* 手機版優化 */
+    @media (max-width: 480px) {
+        .login-card { padding: 20px; }
+        .logo-header { flex-direction: column; gap: 10px; }
+        .logo-text { text-align: center; }
+        .logo-text h1 { font-size: 28px; }
+    }
+     /*Logo 區域 */
+    .logo-header {
+        margin-bottom: 20px;     
+    }
+    .logo-header img {
+        width: 100%; /* 讓圖片自動適應卡片寬度 */
+        max-width: 300px; /* 設定圖片最大寬度 */
+        height: auto;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 16px; /* 手機版不小於 16px 可避免自動縮放 */
+    }
+    
+    button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 20px;
+        background-color: #004a99;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-header">
+        <img src="assets/logon3.png" alt="HARTECH Logo">        
+    </div>
+    <h2 style="font-size: 1.2em; margin-bottom: 10px;">員工登入</h2>
+    <p style="color: #666; font-size: 0.85em; margin-bottom: 20px;">請輸入員工編號與密碼以登入系統</p>
+
+    <div class="input-group">
+        <label>員工編號</label>
+        <input type="text" id="empId" placeholder="請輸入員工編號">
+    </div>
+    <div class="input-group">
+        <label>密碼</label>
+        <input type="password" id="pwd" placeholder="請輸入密碼">
+    </div>
+    
+    <button onclick="login()">登入</button>
+    <div style="margin-top:20px; font-size:0.85em;">
+        <a href="#">忘記密碼？點此重設</a>
+    </div>
+</div>
+
+<script>
+async function login() {
+    const employee_id = document.getElementById('empId').value;
+    const password = document.getElementById('pwd').value;
+    
+    try {
+        const res = await fetch('/api/test/login-debug', {
+            method: 'POST', // 確保這裡是大寫 POST
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_id, password })
+        });
+        
+        // 檢查 HTTP 狀態碼
+        if (res.status === 405) {
+            alert("錯誤：後端路由設定錯誤 (405 Method Not Allowed)，請檢查 index.js");
+            return;
+        }
+
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            // 成功：存下 Token 並跳轉
+            localStorage.setItem('auth_token', data.token);
+            window.location.href = '/dashboard.html';
+        } else if (data.status === 'first_login') {
+            alert("首次登入，請前往設定密碼頁面");
+            // 您可以選擇在這裡跳轉到密碼設定頁
+            // window.location.href = '/set-password.html';
+        } else {
+            alert(data.error || '登入失敗');
+        }
+    } catch (err) {
+        console.error("登入請求失敗:", err);
+        alert("無法連線至伺服器，請檢查網路或稍後再試。");
+    }
+}
+</script>
+
+</body>
+</html>
