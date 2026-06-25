@@ -1,0 +1,2 @@
+name = "my-new-project-name"
+pages_build_output_dir = "frontend" # 請改為您的前端網頁目錄，如果沒有前端就刪掉這行
