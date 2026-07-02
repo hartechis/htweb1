@@ -1,31 +1,22 @@
-// functions/api/auth/login.js
-export const onRequestPost = async ({ request, env }) => {
+export async function onRequestPost(context) {
   try {
-    const input = await request.json();
-    const { employee_id } = input;
-    
-    // 請確認 env.DB 是否在 Cloudflare Dashboard 的 Pages 專案設定中正確綁定
-    const db = env.DB; 
+    // 透過 context.env.DB 存取你定義的綁定
+    const { DB } = context.env;
+    const { employee_id } = await context.request.json();
 
-    const result = await db
-      .prepare("SELECT name FROM employees WHERE employee_id = ?")
+    // 執行 SQL 查詢
+    const result = await DB.prepare("SELECT * FROM employees WHERE employee_id = ?")
       .bind(employee_id)
       .first();
 
     if (result) {
-      return new Response(JSON.stringify({ success: true, name: result.name }), {
-        headers: { "Content-Type": "application/json" }
+      return new Response(JSON.stringify({ status: "success", data: result }), {
+        headers: { "Content-Type": "application/json" },
       });
     } else {
-      return new Response(JSON.stringify({ success: false, message: "查無此工號" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(JSON.stringify({ status: "error", message: "找不到員工" }), { status: 404 });
     }
   } catch (e) {
-    return new Response(JSON.stringify({ success: false, message: e.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(e.message, { status: 500 });
   }
-};
+}
