@@ -83,6 +83,7 @@
     </div>
     
     <button onclick="login()">登入</button>
+    <div id="msgBox" style="color:red; margin-top:15px; display:none; padding:10px; border:1px solid red; border-radius:4px; text-align:center;"></div>
     <div style="margin-top:20px; font-size:0.85em;">
         <a href="#">忘記密碼？點此重設</a>
     </div>
@@ -90,44 +91,25 @@
 
 <script>
 async function login() {
-    const employee_id = document.getElementById('empId').value;
-    const password = document.getElementById('pwd').value;
+    const empId = document.getElementById('empId').value;
+    const pwd = document.getElementById('pwd').value;
+    const msgBox = document.getElementById('msgBox');
     
-    try {
-        // 1. 發送請求
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                employee_id: String(employee_id), 
-                password: String(password) 
-            })
-        });
-        
-        // 2. 取得原始文字回應以進行除錯
-        const text = await res.text();
-        console.log("後端原始回應:", text);
-        
-        // 3. 嘗試解析 JSON
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error("後端未回傳有效的 JSON，回應內容為: " + text);
-        }
-        
-        // 4. 根據狀態碼處理邏輯
-        if (res.status === 200) {
-            localStorage.setItem('auth_token', data.token);
-            window.location.href = '/dashboard.html';
-        } else if (data.status === 'first_login') {
-            alert("首次登入，請前往設定密碼頁面");
-        } else {
-            alert(data.error || '登入失敗');
-        }
-    } catch (err) {
-        console.error("登入錯誤:", err);
-        alert("程式錯誤: " + err.message);
+    const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employee_id: empId, password: pwd })
+    });
+    
+    const data = await res.json();
+    if (data.status === 'first_login') {
+        window.location.href = '/set-password.html?empId=' + empId;
+    } else if (res.status === 200) {
+        localStorage.setItem('auth_token', data.token);
+        window.location.href = '/dashboard.html';
+    } else {
+        msgBox.innerText = data.error || '登入失敗';
+        msgBox.style.display = 'block';
     }
 }
 </script>
