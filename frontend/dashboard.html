@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業系統首頁</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+
+        /* 左側選單 */
+        .sidebar { width: 240px; background-color: #002d72; color: white; display: flex; flex-direction: column; }
+        .sidebar h2 { padding: 20px; font-size: 1.2em; background: rgba(0,0,0,0.2); margin: 0; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li a { padding: 15px 20px; display: block; color: #ddd; text-decoration: none; border-bottom: 1px solid #004a99; }
+        .sidebar ul li a:hover { background: #004a99; color: white; }
+
+        /* 右側區域 */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: #f4f7f6; }
+        
+        /* 上方導覽列 */
+        .top-nav { height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        
+        /* 內容區 */
+        .content-area { padding: 20px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <h2>HARTECH 系統</h2>
+    <ul>
+        <li><a href="#">首頁</a></li>
+        <li><a href="/chat01">內部聊天室</a></li>
+        <li><a href="#">考勤報表</a></li>
+        <li><a href="#" onclick="logout()">登出系統</a></li>
+    </ul>
+</aside>
+
+<div class="main-content">
+    <header class="top-nav">
+        <div>歡迎回來，員工編號: <span id="empIdDisplay"></span></div>
+        <button onclick="logout()">登出</button>
+    </header>
+    
+    <main class="content-area">
+        <h1>儀表板</h1>
+        <p>請從左側選單選擇功能。</p>
+    </main>
+</div>
+
+<script>
+    // 1. 頁面載入時，直接執行檢查
+    async function init() {
+        const token = localStorage.getItem('auth_token');
+        
+        // 若沒有 token，直接踢回登入頁
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
+
+        try {
+            // 2. 向後端驗證 Token (這需要您後端對應有 /api/auth/verify 接口)
+            const res = await fetch('/api/auth/verify', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                // 如果後端說 Token 過期或不正確，清除並踢出
+                localStorage.removeItem('auth_token');
+                window.location.href = '/';
+            } else {
+                // 3. 驗證通過，顯示用戶資訊 (假設後端回傳包含 empId)
+                const data = await res.json();
+                document.getElementById('empIdDisplay').innerText = data.employee_id || '已登入';
+            }
+        } catch (error) {
+            console.error('驗證失敗:', error);
+            window.location.href = '/';
+        }
+    }
+
+    // 執行初始化
+    init();
+
+    // 登出功能
+    function logout() {
+        localStorage.removeItem('auth_token');
+        window.location.href = '/';
+    }
+</script>
+
+</body>
+</html>
