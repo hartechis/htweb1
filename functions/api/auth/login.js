@@ -1,4 +1,4 @@
-// functions/api/auth/login1.js
+// functions/api/auth/login.js
 
 export async function onRequestPost(context) {
   // 1. 取得 Cloudflare Pages 環境綁定的 DB
