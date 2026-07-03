@@ -28,14 +28,12 @@ export async function onRequestPost(context) {
             return jsonResponse({ error: "員工帳號不存在" }, 401);
         }
 
-        // 4. 首次登入檢查 (根據您提供的截圖欄位名稱)
-        // 確保數值比較明確
+        // 4. 首次登入檢查
         if (Number(user.initial_password_set) === 0) {
             return jsonResponse({ status: "first_login", message: "請設定密碼" });
         }
 
         // 5. 密碼驗證邏輯
-        // 使用 Suble Crypto 進行 SHA-256 哈希
         const encoder = new TextEncoder();
         const data = encoder.encode(password);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -46,15 +44,21 @@ export async function onRequestPost(context) {
             return jsonResponse({ error: "密碼錯誤" }, 401);
         }
 
-        // 6. 登入成功
-        return jsonResponse({ status: "success", token: crypto.randomUUID() });
+        // 6. 登入成功：生成 Token 並寫入 sessions 資料庫
+        const token = crypto.randomUUID();
+        // 設定過期時間為 24 小時後
+        const expiresAt = new Date(Date.now() + 86400000).toISOString(); 
+
+        await env.DB.prepare("INSERT INTO sessions (token, employee_id, expires_at) VALUES (?, ?, ?)")
+            .bind(token, employee_id, expiresAt)
+            .run();
+
+        return jsonResponse({ status: "success", token: token });
 
     } catch (err) {
-        // 任何錯誤都會被這裡攔截並轉為 JSON 回傳
         return jsonResponse({ 
             error: "伺服器內部錯誤", 
-            details: err.message,
-            stack: err.stack 
+            details: err.message 
         }, 500);
     }
 }
