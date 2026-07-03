@@ -3,24 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>企業系統首頁</title>
+    <title>企業系統儀表板</title>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
-
-        /* 左側選單 */
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; background: #f4f7f6; }
         .sidebar { width: 240px; background-color: #002d72; color: white; display: flex; flex-direction: column; }
         .sidebar h2 { padding: 20px; font-size: 1.2em; background: rgba(0,0,0,0.2); margin: 0; }
         .sidebar ul { list-style: none; padding: 0; }
         .sidebar ul li a { padding: 15px 20px; display: block; color: #ddd; text-decoration: none; border-bottom: 1px solid #004a99; }
         .sidebar ul li a:hover { background: #004a99; color: white; }
-
-        /* 右側區域 */
-        .main-content { flex: 1; display: flex; flex-direction: column; background: #f4f7f6; }
-        
-        /* 上方導覽列 */
+        .main-content { flex: 1; display: flex; flex-direction: column; }
         .top-nav { height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
-        
-        /* 內容區 */
         .content-area { padding: 20px; overflow-y: auto; }
     </style>
 </head>
@@ -38,7 +30,7 @@
 
 <div class="main-content">
     <header class="top-nav">
-        <div>歡迎回來，員工編號: <span id="empIdDisplay"></span></div>
+        <div>歡迎回來，員工編號: <span id="empIdDisplay">載入中...</span></div>
         <button onclick="logout()">登出</button>
     </header>
     
@@ -49,49 +41,46 @@
 </div>
 
 <script>
-    // 1. 頁面載入時，直接執行檢查
+    // 嚴謹的初始化函式
     async function init() {
-    const token = localStorage.getItem('auth_token');
-    
-    // 檢查點 1：看看 Token 有沒有抓到
-    console.log("偵測到的 Token:", token); 
-    
-    if (!token) {
-        console.log("沒有找到 Token，嘗試導向到 /index.html");
-        window.location.href = '/index.html'; 
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/auth/verify', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        // 檢查點 2：看看後端回傳什麼
-        if (!res.ok) {
-            console.log("驗證失敗，狀態碼:", res.status);
-            localStorage.removeItem('auth_token');
-            window.location.href = '/index.html';
-        } else {
-            const data = await res.json();
-            console.log("驗證成功，用戶:", data.employee_id);
-            document.getElementById('empIdDisplay').innerText = data.employee_id || '已登入';
+        const token = localStorage.getItem('auth_token');
+        
+        // 1. 若完全沒有 token，強制轉址至登入頁
+        if (!token) {
+            window.location.replace('/index.html');
+            return;
         }
-    } catch (error) {
-        // 檢查點 3：看看有沒有發生網路錯誤
-        console.error("發生異常:", error);
-        window.location.href = '/index.html';
+
+        try {
+            // 2. 驗證 Token 有效性
+            const res = await fetch('/api/auth/verify', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                console.warn("Token 無效或過期，清除並轉址");
+                localStorage.removeItem('auth_token');
+                window.location.replace('/index.html');
+            } else {
+                const data = await res.json();
+                document.getElementById('empIdDisplay').innerText = data.employee_id || '未知用戶';
+            }
+        } catch (error) {
+            console.error('驗證過程中發生網路錯誤:', error);
+            // 若網路錯誤，建議維持原狀或轉址，視您的需求而定
+            window.location.replace('/index.html');
+        }
     }
-}
-    // 執行初始化
-    init();
 
     // 登出功能
     function logout() {
         localStorage.removeItem('auth_token');
-        window.location.href = '/index.html';
+        window.location.replace('/index.html');
     }
+
+    // 頁面載入時執行
+    init();
 </script>
 
 </body>
