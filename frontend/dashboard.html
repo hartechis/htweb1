@@ -51,36 +51,39 @@
 <script>
     // 1. 頁面載入時，直接執行檢查
     async function init() {
-        const token = localStorage.getItem('auth_token');
-        
-        // 若沒有 token，直接踢回登入頁
-        if (!token) {
-            window.location.href = '/index.html';
-            return;
-        }
-
-        try {
-            // 2. 向後端驗證 Token (這需要您後端對應有 /api/auth/verify 接口)
-            const res = await fetch('/api/auth/verify', {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) {
-                // 如果後端說 Token 過期或不正確，清除並踢出
-                localStorage.removeItem('auth_token');
-                window.location.href = '/index.html';
-            } else {
-                // 3. 驗證通過，顯示用戶資訊 (假設後端回傳包含 empId)
-                const data = await res.json();
-                document.getElementById('empIdDisplay').innerText = data.employee_id || '已登入';
-            }
-        } catch (error) {
-            console.error('驗證失敗:', error);
-            window.location.href = '/index.html';
-        }
+    const token = localStorage.getItem('auth_token');
+    
+    // 檢查點 1：看看 Token 有沒有抓到
+    console.log("偵測到的 Token:", token); 
+    
+    if (!token) {
+        console.log("沒有找到 Token，嘗試導向到 /index.html");
+        window.location.href = '/index.html'; 
+        return;
     }
 
+    try {
+        const res = await fetch('/api/auth/verify', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        // 檢查點 2：看看後端回傳什麼
+        if (!res.ok) {
+            console.log("驗證失敗，狀態碼:", res.status);
+            localStorage.removeItem('auth_token');
+            window.location.href = '/index.html';
+        } else {
+            const data = await res.json();
+            console.log("驗證成功，用戶:", data.employee_id);
+            document.getElementById('empIdDisplay').innerText = data.employee_id || '已登入';
+        }
+    } catch (error) {
+        // 檢查點 3：看看有沒有發生網路錯誤
+        console.error("發生異常:", error);
+        window.location.href = '/index.html';
+    }
+}
     // 執行初始化
     init();
 
