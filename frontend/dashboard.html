@@ -52,7 +52,7 @@
         }
 
         try {
-            // 2. 驗證 Token 有效性
+            // 2. 驗證 Token 有效性並取得員工資訊
             const res = await fetch('/api/auth/verify', {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -62,18 +62,19 @@
                 console.warn("Token 無效或過期，清除並轉址");
                 logout(); // 使用統一的登出函式
             } else {
-                // 3. 成功後顯示資訊
-                // 從 localStorage 讀取登入時存入的工號與姓名
-                const empId = localStorage.getItem('empId');
-                const empName = localStorage.getItem('empName');
+                // 3. 成功後解析 API 回傳的資料
+                const data = await res.json(); // 這邊會收到 { employee_id, name }
                 
+                // 將資料存入 localStorage，解決 undefined 問題
+                localStorage.setItem('empId', data.employee_id);
+                localStorage.setItem('empName', data.name);
+                
+                // 4. 更新畫面顯示
                 const display = document.getElementById('empIdDisplay');
-                if (empId && empName) {
-                    display.innerText = `${empId} ${empName}`;
+                if (data.employee_id && data.name) {
+                    display.innerText = `${data.employee_id} ${data.name}`;
                 } else {
-                    // 若 localStorage 剛好沒有，嘗試從 API 回傳值讀取
-                    const data = await res.json();
-                    display.innerText = data.employee_id ? `${data.employee_id} (請重新登入以顯示姓名)` : '未知用戶';
+                    display.innerText = "資料讀取異常";
                 }
             }
         } catch (error) {
@@ -82,7 +83,7 @@
         }
     }
 
-    // 登出功能 (加入清除更多資訊)
+    // 登出功能
     function logout() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('empId');
