@@ -16,22 +16,33 @@
         .content-area { padding: 20px; overflow-y: auto; }
    
     /* 手機版 (寬度小於 768px) */
-    @media screen and (max-width: 768px) {
-        .sidebar {
-            width: 100%;       /* 手機版選單變滿版 */
-            float: none;       /* 取消浮動 */
-            position: relative;
-        }
-        .main-content {
-            margin-left: 0;    /* 手機版內容不再靠右留空 */
-            padding: 10px;
-        }
-        /* 圖片調整 */
-        img {
-            max-width: 100%;   /* 確保圖片不會超出手機螢幕 */
-            height: auto;
-        }
+    /* 響應式調整 */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* 將左右排列改為上下排列 */
+        overflow-y: auto;       /* 允許頁面垂直捲動 */
+        height: auto;           /* 取消固定高度 */
     }
+
+    .sidebar {
+        width: 100%;            /* 選單寬度撐滿 */
+        height: auto;           /* 高度隨內容調整 */
+        flex: none;             /* 取消固定比例 */
+    }
+
+    .main-content {
+        width: 100%;            /* 內容寬度撐滿 */
+        padding: 20px;          /* 增加內距，讓文字不要太靠邊 */
+    }
+
+    /* 修正手機版文字過度擁擠的問題 */
+    .header-user-info {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        white-space: nowrap;    /* 防止文字隨意斷行 */
+    }
+}
     </style>
 </head>
 <body>
