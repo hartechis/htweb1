@@ -55,7 +55,7 @@
         
         // 若沒有 token，直接踢回登入頁
         if (!token) {
-            window.location.href = '/';
+            window.location.href = '/index.html';
             return;
         }
 
@@ -77,7 +77,7 @@
             }
         } catch (error) {
             console.error('驗證失敗:', error);
-            window.location.href = '/';
+            window.location.href = '/index.html';
         }
     }
 
@@ -87,7 +87,7 @@
     // 登出功能
     function logout() {
         localStorage.removeItem('auth_token');
-        window.location.href = '/';
+        window.location.href = '/index.html';
     }
 </script>
 
