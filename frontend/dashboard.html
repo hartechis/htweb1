@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聚大智能內部系統</title>
+    <title>聚大智能系統</title>
     <style>
         body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; background: #f4f7f6; }
         .sidebar { width: 240px; background-color: #002d72; color: white; display: flex; flex-direction: column; }
@@ -30,7 +30,7 @@
 
 <div class="main-content">
     <header class="top-nav">
-        <div>歡迎回來，員工編號: <span id="empIdDisplay">載入中...</span></div>
+        <div>歡迎回來，員工: <span id="empIdDisplay">載入中...</span></div>
         <button onclick="logout()">登出</button>
     </header>
     
@@ -60,22 +60,33 @@
 
             if (!res.ok) {
                 console.warn("Token 無效或過期，清除並轉址");
-                localStorage.removeItem('auth_token');
-                window.location.replace('/index.html');
+                logout(); // 使用統一的登出函式
             } else {
-                const data = await res.json();
-                document.getElementById('empIdDisplay').innerText = data.employee_id || '未知用戶';
+                // 3. 成功後顯示資訊
+                // 從 localStorage 讀取登入時存入的工號與姓名
+                const empId = localStorage.getItem('empId');
+                const empName = localStorage.getItem('empName');
+                
+                const display = document.getElementById('empIdDisplay');
+                if (empId && empName) {
+                    display.innerText = `${empId} ${empName}`;
+                } else {
+                    // 若 localStorage 剛好沒有，嘗試從 API 回傳值讀取
+                    const data = await res.json();
+                    display.innerText = data.employee_id ? `${data.employee_id} (請重新登入以顯示姓名)` : '未知用戶';
+                }
             }
         } catch (error) {
             console.error('驗證過程中發生網路錯誤:', error);
-            // 若網路錯誤，建議維持原狀或轉址，視您的需求而定
             window.location.replace('/index.html');
         }
     }
 
-    // 登出功能
+    // 登出功能 (加入清除更多資訊)
     function logout() {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('empId');
+        localStorage.removeItem('empName');
         window.location.replace('/index.html');
     }
 
