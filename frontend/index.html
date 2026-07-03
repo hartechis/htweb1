@@ -9,7 +9,8 @@
         .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-       #msgBox {
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #msgBox {
     /* 移除 position: fixed; top: 50% 等舊屬性 */
     color: #ff4d4f;
     font-size: 0.85em;
@@ -25,9 +26,14 @@
     </div>
     <h2>員工登入</h2>
     <div class="input-group">
+        <label>員工工號</label>
         <input type="text" id="empId" placeholder="請輸入工號">
-        <input type="password" id="pwd" placeholder="請輸入密碼">
     </div>
+    <div class="input-group">
+        <label>密碼</label>
+        <input type="text" id="empId" placeholder="請輸入密碼">
+    </div>    
+   
 <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0; min-height: 20px;">
     <a href="/set-password.html?mode=reset" style="font-size: 0.85em; color: #004a99; text-decoration: none;">重設密碼</a>
     <div id="msgBox" style="color: #ff4d4f; font-size: 0.85em; display: none;"></div>
