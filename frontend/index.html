@@ -28,37 +28,43 @@
 </div>
 
 <script>
-async function login() {
+<script>
+async function login(event) {
+    // 如果有 event，阻止它預設的表單送出行為
+    if (event) event.preventDefault(); 
+    
     const empId = document.getElementById('empId').value;
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
+    // 檢查是否有輸入值
+    if (!empId || !pwd) {
+        msgBox.innerText = "請輸入帳號與密碼";
+        msgBox.style.display = 'block';
+        return;
+    }
+
     try {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ employee_id: empId, password: pwd })
         });
-      // 修正後的判斷區塊
-const data = await res.json();
-console.log("後端回應資料:", data); // 增加除錯日誌
-console.log("回應狀態碼:", res.status); // 增加除錯日誌
-
-if (data.status === 'first_login') {
-    console.log("偵測到首次登入，準備前往設定密碼頁面");
-    window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId);
-} else if (res.status === 200) {
-    console.log("登入成功，儲存 Token 並前往儀表板");
-    localStorage.setItem('auth_token', data.token);
-    window.location.href = '/dashboard.html';
-} else {
-    console.warn("登入失敗，錯誤訊息:", data.error);
-    msgBox.innerText = data.error || '登入失敗';
-    msgBox.style.display = 'block';
-    setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
-}
+        
+        const data = await res.json();
+        
+        if (data.status === 'first_login') {
+            window.location.href = '/set-password.html?empId=' + empId;
+        } else if (res.status === 200) {
+            localStorage.setItem('auth_token', data.token);
+            // 確保路徑完全正確
+            window.location.href = '/dashboard.html';
+        } else {
+            msgBox.innerText = data.error || '登入失敗';
+            msgBox.style.display = 'block';
+        }
     } catch (err) {
-        msgBox.innerText = "伺服器連接錯誤";
+        msgBox.innerText = "伺服器連接錯誤: " + err.message;
         msgBox.style.display = 'block';
     }
 }
