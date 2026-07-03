@@ -120,8 +120,8 @@ async function login() {
         localStorage.setItem('auth_token', data.token);
         window.location.href = '/dashboard.html';
     } else {
-        msgBox.innerText = data.error || '登入失敗';
-        msgBox.style.display = 'block';
+        alert(data.error); || '登入失敗';
+        
     }
 }
 </script>
