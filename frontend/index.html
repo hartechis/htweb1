@@ -5,100 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聚大智能員工登入系統</title>
     <style>
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /使用 min-height 確保手機上捲動正常/
-            background-color: #002d72;
-            font-family: Arial, "Microsoft JhengHei", sans-serif;
-            padding: 20px; /手機版邊緣留白/
-        }
-        
-        .login-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 300px;
-        }
-
-        /* 手機版優化 */
-    @media (max-width: 480px) {
-        .login-card { padding: 20px; }
-        .logo-header { flex-direction: column; gap: 10px; }
-        .logo-text { text-align: center; }
-        .logo-text h1 { font-size: 28px; }
-    }
-         /*Logo 區域 */
-    .logo-header {
-        margin-bottom: 20px;     
-    }
-    .logo-header img {
-        width: 100%; /* 讓圖片自動適應卡片寬度 */
-        max-width: 300px; /* 設定圖片最大寬度 */
-        height: auto;
-    }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;/* 手機版不小於 16px 可避免自動縮放 */
-        }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 10px;
-            background-color: #004a99;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-#msgBox {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #ff4d4f; /* 紅色底 */
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-        
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #002d72; font-family: Arial, "Microsoft JhengHei", sans-serif; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
+        button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        #msgBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ff4d4f; color: white; padding: 20px; border-radius: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="login-card">
     <div class="logo-header">
-        <img src="assets/harechLOGON3.png" alt="HARTECH Logo">        
+        <img src="assets/harechLOGON3.png" alt="HARTECH Logo" style="width:100%; height:auto;">        
     </div>
-    <h2 style="font-size: 1.2em; margin-bottom: 10px;">員工登入</h2>
-    <p style="color: #666; font-size: 0.85em; margin-bottom: 20px;">請輸入員工編號與密碼以登入系統</p>
-    
+    <h2>員工登入</h2>
     <div class="input-group">
-        <label>員工編號</label>
         <input type="text" id="empId" placeholder="請輸入員工編號">
-    </div>
-    <div class="input-group">
-        <label>密碼</label>
         <input type="password" id="pwd" placeholder="請輸入密碼">
     </div>
-    
     <button onclick="login()">登入</button>
-    <div style="margin-top:20px; font-size:0.85em;">
-        <a href="#">忘記密碼？點此重設</a>
-    </div>
+    <div id="msgBox"></div>
 </div>
 
 <script>
@@ -107,25 +33,29 @@ async function login() {
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
-    const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employee_id: empId, password: pwd })
-    });
-    
-    const data = await res.json();
-    if (data.status === 'first_login') {
-        window.location.href = '/set-password.html?empId=' + empId;
-    } else if (res.status === 200) {
-        localStorage.setItem('auth_token', data.token);
-        window.location.href = '/dashboard.html';
-    } else {
-         msgBox.innerText = data.error || '登入失敗';
-        msgBox.style.display = 'block';
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_id: empId, password: pwd })
+        });
+        const data = await res.json();
         
+        if (data.status === 'first_login') {
+            window.location.href = '/set-password.html?empId=' + empId;
+        } else if (res.status === 200) {
+            localStorage.setItem('auth_token', data.token);
+            window.location.href = '/dashboard.html';
+        } else {
+            msgBox.innerText = data.error || '登入失敗';
+            msgBox.style.display = 'block';
+            setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
+        }
+    } catch (err) {
+        msgBox.innerText = "伺服器連接錯誤";
+        msgBox.style.display = 'block';
     }
 }
 </script>
-
 </body>
 </html>
