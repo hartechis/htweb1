@@ -22,21 +22,23 @@ export async function onRequestPost(context) {
         }
 
         // 1. 如果是重設密碼模式，必須驗證舊密碼
-        if (mode === 'reset') {
-            const user = await env.DB.prepare("SELECT password_hash FROM employees WHERE employee_id = ?")
-                .bind(employee_id)
-                .first();
-            
-            if (!user) {
-                return new Response(JSON.stringify({ error: "查無此員工帳號" }), { status: 404, headers: getCorsHeaders() });
-            }
-
-            const oldHashed = await hashPassword(old_password);
-            if (user.password_hash !== oldHashed) {
-                return new Response(JSON.stringify({ error: "舊密碼錯誤" }), { status: 401, headers: getCorsHeaders() });
-            }
-        }
-
+        // 在 set-password.js 中加入驗證
+if (mode === 'reset') {
+    // 檢查員工編號是否存在
+    const user = await env.DB.prepare("SELECT password_hash FROM employees WHERE employee_id = ?")
+        .bind(employee_id)
+        .first();
+    
+    if (!user) {
+        return new Response(JSON.stringify({ error: "員工編號不存在" }), { status: 404, headers: {...} });
+    }
+    
+    // 驗證舊密碼是否正確
+    const oldHashed = await hashPassword(old_password);
+    if (user.password_hash !== oldHashed) {
+        return new Response(JSON.stringify({ error: "舊密碼錯誤" }), { status: 401, headers: {...} });
+    }
+}
         // 2. 進行密碼更新
         const newHashed = await hashPassword(new_password);
         
