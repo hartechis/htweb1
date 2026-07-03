@@ -14,6 +14,24 @@
         .main-content { flex: 1; display: flex; flex-direction: column; }
         .top-nav { height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
         .content-area { padding: 20px; overflow-y: auto; }
+   
+    /* 手機版 (寬度小於 768px) */
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            width: 100%;       /* 手機版選單變滿版 */
+            float: none;       /* 取消浮動 */
+            position: relative;
+        }
+        .main-content {
+            margin-left: 0;    /* 手機版內容不再靠右留空 */
+            padding: 10px;
+        }
+        /* 圖片調整 */
+        img {
+            max-width: 100%;   /* 確保圖片不會超出手機螢幕 */
+            height: auto;
+        }
+    }
     </style>
 </head>
 <body>
