@@ -1,4 +1,3 @@
-// functions/api/auth/set-password.js
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -12,27 +11,35 @@ function getCorsHeaders() {
 
 export async function onRequestPost(context) {
     const { request, env } = context;
-    const { employee_id, new_password, old_password, mode } = await request.json();
-
+    
     try {
+        const body = await request.json();
+        const { employee_id, new_password, old_password, mode } = body;
+
+        // 檢查必要參數
+        if (!employee_id || !new_password) {
+            return new Response(JSON.stringify({ error: "參數缺失" }), { status: 400, headers: getCorsHeaders() });
+        }
+
         // 1. 如果是重設密碼模式，必須驗證舊密碼
         if (mode === 'reset') {
             const user = await env.DB.prepare("SELECT password_hash FROM employees WHERE employee_id = ?")
                 .bind(employee_id)
                 .first();
             
+            if (!user) {
+                return new Response(JSON.stringify({ error: "查無此員工帳號" }), { status: 404, headers: getCorsHeaders() });
+            }
+
             const oldHashed = await hashPassword(old_password);
             if (user.password_hash !== oldHashed) {
-                return new Response(JSON.stringify({ error: "舊密碼錯誤" }), { 
-                    status: 401, headers: { ...getCorsHeaders(), "Content-Type": "application/json" } 
-                });
+                return new Response(JSON.stringify({ error: "舊密碼錯誤" }), { status: 401, headers: getCorsHeaders() });
             }
         }
 
         // 2. 進行密碼更新
         const newHashed = await hashPassword(new_password);
         
-        // 更新密碼，並將 initial_password_set 設為 1 (代表已設定過)
         await env.DB.prepare("UPDATE employees SET password_hash = ?, initial_password_set = 1 WHERE employee_id = ?")
             .bind(newHashed, employee_id)
             .run();
@@ -42,13 +49,16 @@ export async function onRequestPost(context) {
         });
 
     } catch (err) {
-        return new Response(JSON.stringify({ error: "伺服器內部錯誤", details: err.message }), { 
+        // 重要：回傳 err.message，這樣您在前端 msgBox 就能看到具體錯誤
+        return new Response(JSON.stringify({ 
+            error: "伺服器內部錯誤", 
+            details: err.message // 這裡會顯示具體程式錯誤
+        }), { 
             status: 500, headers: { ...getCorsHeaders(), "Content-Type": "application/json" } 
         });
     }
 }
 
-// 處理 CORS 預檢
 export async function onRequestOptions() {
     return new Response(null, { status: 204, headers: getCorsHeaders() });
 }
