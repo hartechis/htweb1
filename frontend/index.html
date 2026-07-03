@@ -9,7 +9,18 @@
         .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        #msgBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ff4d4f; color: white; padding: 20px; border-radius: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; text-align: center; }
+       #msgBox {
+    position: fixed;
+    bottom: 20px; /* 改為底部 */
+    right: 20px;  /* 改為右側 */
+    background: #ff4d4f;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: none; /* 預設隱藏 */
+}
     </style>
 </head>
 <body>
@@ -33,41 +44,29 @@ async function login() {
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
-    // 檢查輸入是否為空
-    if (!empId || !pwd) {
-        msgBox.innerText = '請輸入員工編號與密碼';
-        msgBox.style.display = 'block';
-        return;
-    }
-
     try {
-        // 發送登入請求
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                employee_id: String(empId), 
-                password: String(pwd) 
-            })
+            body: JSON.stringify({ employee_id: empId, password: pwd })
         });
         
         const data = await res.json();
-        
-        // 根據狀態進行處理
-        if (res.status === 200) {
-            if (data.status === 'first_login') {
-                window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId);
-            } else {
-                localStorage.setItem('auth_token', data.token);
-                window.location.href = '/dashboard.html';
-            }
+        console.log("後端回應:", data); // 檢查是否有 first_login 狀態
+
+        if (data.status === 'first_login') {
+            // 強制跳轉，確保路徑正確
+            window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId) + '&mode=first';
+        } else if (res.status === 200) {
+            localStorage.setItem('auth_token', data.token);
+            window.location.href = '/dashboard.html';
         } else {
             msgBox.innerText = data.error || '登入失敗';
             msgBox.style.display = 'block';
+            setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
         }
     } catch (err) {
-        console.error("登入錯誤:", err);
-        msgBox.innerText = "伺服器連接錯誤，請稍後再試";
+        msgBox.innerText = "伺服器錯誤";
         msgBox.style.display = 'block';
     }
 }
