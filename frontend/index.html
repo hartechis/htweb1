@@ -28,43 +28,46 @@
 </div>
 
 <script>
-<script>
-async function login(event) {
-    // 如果有 event，阻止它預設的表單送出行為
-    if (event) event.preventDefault(); 
-    
+async function login() {
     const empId = document.getElementById('empId').value;
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
-    // 檢查是否有輸入值
+    // 檢查輸入是否為空
     if (!empId || !pwd) {
-        msgBox.innerText = "請輸入帳號與密碼";
+        msgBox.innerText = '請輸入員工編號與密碼';
         msgBox.style.display = 'block';
         return;
     }
 
     try {
+        // 發送登入請求
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ employee_id: empId, password: pwd })
+            body: JSON.stringify({ 
+                employee_id: String(empId), 
+                password: String(pwd) 
+            })
         });
         
         const data = await res.json();
         
-        if (data.status === 'first_login') {
-            window.location.href = '/set-password.html?empId=' + empId;
-        } else if (res.status === 200) {
-            localStorage.setItem('auth_token', data.token);
-            // 確保路徑完全正確
-            window.location.href = '/dashboard.html';
+        // 根據狀態進行處理
+        if (res.status === 200) {
+            if (data.status === 'first_login') {
+                window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId);
+            } else {
+                localStorage.setItem('auth_token', data.token);
+                window.location.href = '/dashboard.html';
+            }
         } else {
             msgBox.innerText = data.error || '登入失敗';
             msgBox.style.display = 'block';
         }
     } catch (err) {
-        msgBox.innerText = "伺服器連接錯誤: " + err.message;
+        console.error("登入錯誤:", err);
+        msgBox.innerText = "伺服器連接錯誤，請稍後再試";
         msgBox.style.display = 'block';
     }
 }
