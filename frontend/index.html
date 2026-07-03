@@ -10,17 +10,11 @@
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
        #msgBox {
-    position: fixed;
-    bottom: 20px; /* 改為底部 */
-    right: 20px;  /* 改為右側 */
-    background: #ff4d4f;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    /* 移除 position: fixed; top: 50% 等舊屬性 */
+    color: #ff4d4f;
+    font-size: 0.85em;
     display: none; /* 預設隱藏 */
-}
+       }
     </style>
 </head>
 <body>
@@ -34,8 +28,12 @@
         <input type="text" id="empId" placeholder="請輸入員工編號">
         <input type="password" id="pwd" placeholder="請輸入密碼">
     </div>
-    <button onclick="login()">登入</button>
-    <div id="msgBox"></div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0; min-height: 20px;">
+    <a href="/set-password.html?mode=reset" style="font-size: 0.85em; color: #004a99; text-decoration: none;">忘記密碼？</a>
+    <div id="msgBox" style="color: #ff4d4f; font-size: 0.85em; display: none;"></div>
+</div>
+    
+    <button onclick="login()">登入</button>   
 </div>
 
 <script>
@@ -44,6 +42,10 @@ async function login() {
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
+    // 清除舊訊息
+    msgBox.style.display = 'none';
+    msgBox.innerText = '';
+
     try {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
@@ -52,21 +54,19 @@ async function login() {
         });
         
         const data = await res.json();
-        console.log("後端回應:", data); // 檢查是否有 first_login 狀態
 
         if (data.status === 'first_login') {
-            // 強制跳轉，確保路徑正確
             window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId) + '&mode=first';
         } else if (res.status === 200) {
             localStorage.setItem('auth_token', data.token);
             window.location.href = '/dashboard.html';
         } else {
+            // 顯示訊息在按鈕上方
             msgBox.innerText = data.error || '登入失敗';
             msgBox.style.display = 'block';
-            setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
         }
     } catch (err) {
-        msgBox.innerText = "伺服器錯誤";
+        msgBox.innerText = "伺服器連接錯誤";
         msgBox.style.display = 'block';
     }
 }
