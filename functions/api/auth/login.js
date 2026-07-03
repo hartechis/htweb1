@@ -25,7 +25,7 @@ export async function onRequestPost(context) {
 
         // 3. 檢查帳號是否存在
         if (!user) {
-            return jsonResponse({ error: "員工帳號不存在" }, 401);
+            return jsonResponse({ error: "未輸入工號或工號錯誤" }, 401);
         }
 
         // 4. 首次登入檢查
