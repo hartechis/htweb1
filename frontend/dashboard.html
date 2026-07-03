@@ -69,7 +69,7 @@
             if (!res.ok) {
                 // 如果後端說 Token 過期或不正確，清除並踢出
                 localStorage.removeItem('auth_token');
-                window.location.href = '/';
+                window.location.href = '/index.html';
             } else {
                 // 3. 驗證通過，顯示用戶資訊 (假設後端回傳包含 empId)
                 const data = await res.json();
