@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
             const user = await env.DB.prepare("SELECT password_hash FROM employees WHERE employee_id = ?")
                 .bind(employee_id).first();
             
-            if (!user) return new Response(JSON.stringify({ error: "查無此員工" }), { status: 404, headers: getCorsHeaders() });
+            if (!user) return new Response(JSON.stringify({ error: "查無此工號" }), { status: 404, headers: getCorsHeaders() });
 
             const oldHashed = await hashPassword(old_password || "");
             if (user.password_hash !== oldHashed) {
