@@ -62,12 +62,17 @@ async function login() {
         const data = await res.json();
 
         if (data.status === 'first_login') {
+            // 首次登入導向設定密碼頁
             window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId) + '&mode=first';
         } else if (res.status === 200) {
-            localStorage.setItem('auth_token', data.token);
+            // --- 核心修改：存入工號與姓名 ---
+            localStorage.setItem('empId', data.employee_id);
+            localStorage.setItem('empName', data.name);
+            localStorage.setItem('auth_token', data.token); // 若有 token 也建議存入
+            
+            // 導向儀表板
             window.location.href = '/dashboard.html';
         } else {
-            // 顯示訊息在按鈕上方
             msgBox.innerText = data.error || '登入失敗';
             msgBox.style.display = 'block';
         }
