@@ -20,7 +20,7 @@ export async function onRequestPost(context) {
         const { employee_id, new_password, old_password, mode } = await request.json();
 
        // 檢查密碼： (?=.*[0-9]) 包含數字或 (?=.*[a-zA-Z]) 包含字母.{5} 總長度
-      const passwordRegex = /^(?=.*[0-9]).{4}$/;
+      const passwordRegex = /^(?=.*[0-9]).{5}$/;
       if (!passwordRegex.test(new_password)) {
           return new Response(JSON.stringify({ 
            error: "密碼必須為5位數字" 
