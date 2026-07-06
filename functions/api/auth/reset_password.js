@@ -10,8 +10,8 @@ export async function onRequestPost(context) {
     const { env, request } = context;
     const { employee_id } = await request.json();
 
-    // 強制重設為 a111111
-    const newPassword = "a11111"; 
+    // 強制重設為 1111
+    const newPassword = "1111"; 
     const hashed = await hashPassword(newPassword);
 
     const result = await env.DB.prepare("UPDATE employees SET password_hash = ? WHERE employee_id = ?")
