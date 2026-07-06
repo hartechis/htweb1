@@ -19,11 +19,11 @@ export async function onRequestPost(context) {
     try {
         const { employee_id, new_password, old_password, mode } = await request.json();
 
-       // 檢查密碼：包含數字、包含英文、長度為 6 (?=.*[0-9]) 確保包含數字 (?=.*[a-zA-Z]) 確保包含字母.{6} 確保總長度為 6
-      const passwordRegex = /^(?=.*[0-9])(?=.*[a-zA-Z]).{6}$/;
+       // 檢查密碼：包含數字、包含英文、長度為 4 (?=.*[0-9]) 確保包含數字 (?=.*[a-zA-Z]) 確保包含字母.{4} 確保總長度為 4
+      const passwordRegex = /^(?=.*[0-9])(?=.*[a-zA-Z]).{4}$/;
       if (!passwordRegex.test(new_password)) {
           return new Response(JSON.stringify({ 
-           error: "密碼必須為6位數，且需包含數字與英文" 
+           error: "密碼必須為4位數，且需包含數字與英文" 
               }), { status: 400, headers: getCorsHeaders() });
             }
 
