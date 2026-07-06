@@ -19,7 +19,7 @@ export async function onRequestPost(context) {
     try {
         const { employee_id, new_password, old_password, mode } = await request.json();
 
-       // 檢查密碼：包含數字、包含英文、長度為 6 (?=.*[0-9]) 確保包含數字 (?=.*[a-zA-Z]) 確保包含字母.{4} 確保總長度為 4
+       // 檢查密碼：包含數字、包含英文、長度為 6 (?=.*[0-9]) 確保包含數字 (?=.*[a-zA-Z]) 確保包含字母.{6} 確保總長度為 6
       const passwordRegex = /^(?=.*[0-9])(?=.*[a-zA-Z]).{6}$/;
       if (!passwordRegex.test(new_password)) {
           return new Response(JSON.stringify({ 
