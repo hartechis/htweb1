@@ -1,4 +1,4 @@
-// functions/api/auth/reset_password.js
+// functions/api/auth/basereset_password.js
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
