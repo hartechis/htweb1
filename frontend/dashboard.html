@@ -58,7 +58,7 @@
     <aside class="sidebar" id="sidebar">
         <ul>
             <li><a href="/dashboard.html">首頁</a></li>
-            <li><a href="/chat01">內部聊天室</a></li>
+            <li><a href="javascript:void(0);" onclick="openChatRoom()">內部聊天室</a></li>
             <li><a href="#">線上填報請出差</a></li>
             <li><a href="/form">自製表單</a></li>
             <li><a href="#" onclick="logout()">登出系統</a></li>
@@ -72,12 +72,28 @@
 </div>
     
 <script>
-    // 切換選單顯示狀態
+    // 切換側邊選單
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('active');
     }
 
-    // 初始化驗證函式
+    // 聊天室導向邏輯
+    function openChatRoom() {
+        const empId = localStorage.getItem('empId');
+        const empName = localStorage.getItem('empName');
+        
+        // 預設房間設定：可根據您的需求改為從資料庫讀取，或預設為 'general'
+        const roomName = 'general'; 
+        
+        // 設定身分：內部員工帶入 admin，外部人員帶入 client
+        // 此處可依照員工 ID 或類型動態判斷
+        const role = 'admin'; 
+
+        // 導向聊天室，參數 rm 為房間名稱，i 為身分
+        window.location.href = `/chat01.html?rm=${encodeURIComponent(roomName)}&i=${role}`;
+    }
+
+    // 初始化驗證與 UI 更新
     async function init() {
         const token = localStorage.getItem('auth_token');
         if (!token) {
@@ -95,6 +111,7 @@
                 logout();
             } else {
                 const data = await res.json();
+                // 儲存資訊至 LocalStorage，供其他頁面使用
                 localStorage.setItem('empId', data.employee_id);
                 localStorage.setItem('empName', data.name);
                 
@@ -111,11 +128,13 @@
         }
     }
 
+    // 登出函式
     function logout() {
         localStorage.clear();
         window.location.replace('/index.html');
     }
 
+    // 頁面載入時執行初始化
     init();
 </script>
 
