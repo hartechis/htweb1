@@ -77,14 +77,22 @@
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-const rm = params.get('rm') || 'default';
-// 從網址獲取身分參數，例如 ?i=admin (內部) 或 ?i=guest (外部)
-const userRole = params.get('i') === 'admin' ? '內部員工' : '外部訪客';
+       <script>
+    const API_BASE = "https://pg.hartechis.workers.dev";
+    
+    // 1. 從網址取得參數
+    const params = new URLSearchParams(window.location.search);
+    const rm = params.get('rm') || 'default'; // 房間名稱，若無則預設為 default
+    
+    // 2. 根據參數 i 判斷身分 (i=admin 為內部員工，其餘為外部訪客)
+    // 建議將這兩個變數定義為全域變數，方便後面的函式取用
+    const myRole = params.get('i') === 'admin' ? 'admin' : 'client'; 
+    const roleDisplayName = myRole === 'admin' ? '內部員工' : '外部訪客';
+    
+    // 3. 更新介面顯示
+    document.getElementById('roomName').innerText = `${rm} (${roleDisplayName})`;
 
-// 頁面顯示調整
-document.getElementById('roomName').innerText = `${rm} (${userRole})`;
-        // 若為外部人員，可隱藏某些敏感功能
+       // 若為外部人員，可隱藏某些敏感功能
 if (userRole === '外部訪客') {
     // 例如隱藏某些選單或設定
     console.log("外部人員模式：已限制權限");
