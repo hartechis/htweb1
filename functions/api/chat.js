@@ -3,6 +3,7 @@ export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
     const room = url.searchParams.get('rm') || 'default';
+    const storedFilename = `chat01/${room}/${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${extension}`;
     
     // 假設您在登入後已將 employee_id 存入 Session 或 Header
     const sender_id = request.headers.get("X-Employee-ID"); 
