@@ -77,6 +77,24 @@
     </div>
 
     <script>
+     // --- 新增：驗證與保護機制 ---
+    async function checkAuth() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.replace('/index.html');
+            return false;
+        }
+        // 可選：進一步呼叫驗證 API 確保 token 有效
+        return true;
+    }
+
+    // 在執行 initSSE() 之前先呼叫驗證
+    async function startChat() {
+        const authenticated = await checkAuth();
+        if (authenticated) {
+            initSSE(false); // 驗證通過後才開啟連線
+        }
+    }   
      
     const API_BASE = "https://pg.hartechis.workers.dev";
     
