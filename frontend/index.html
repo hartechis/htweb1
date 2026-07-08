@@ -17,7 +17,7 @@
             
             if (response.ok) {
                 // Token 有效且在 8 小時內，自動跳轉到 Dashboard
-                window.location.replace('/dashboard/');
+                window.location.replace('/dashboard/dashboard.html')
             } else {
                 // Token 已過期，清除它，讓使用者留在登入頁重新登入
                 localStorage.removeItem('auth_token');
@@ -95,7 +95,7 @@ async function login() {
             localStorage.setItem('auth_token', data.token); // 若有 token 也建議存入
             
             // 導向儀表板
-            window.location.href = '/dashboard.html';
+            window.location.replace('/dashboard/dashboard.html')
         } else {
             msgBox.innerText = data.error || '登入失敗';
             msgBox.style.display = 'block';
