@@ -4,11 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聚大智能員工登入</title>
+     <style>
+        /* 預設隱藏整個頁面 */
+  body { visibility: hidden; } 
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #002d72; font-family: Arial, "Microsoft JhengHei", sans-serif; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
+        button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #msgBox {
+    /* 移除 position: fixed; top: 50% 等舊屬性 */
+    color: #ff4d4f;
+    font-size: 0.85em;
+    display: none; /* 預設隱藏 */
+       }
+    </style>
+    
     <script>
     async function checkEntry() {
         const token = localStorage.getItem('auth_token');
-        if (!token) return; // 沒有 Token，留在登入頁面
-
+        // 1. 沒有 Token，顯示登入頁面
+        if (!token) {
+            document.body.style.visibility = 'visible';
+            return; 
+        }
         // 有 Token，去後端驗證 8 小時效期
         try {
             const response = await fetch('/api/auth/verify', {
@@ -23,26 +42,17 @@
                localStorage.removeItem('auth_token');
                localStorage.removeItem('empId');
                localStorage.removeItem('empName'); 
+               document.body.style.visibility = 'visible'; 
             }
           } catch (e) {
             console.error("驗證服務連線失敗");
+            // 就算連線失敗，也要顯示登入頁讓使用者重試
+            document.body.style.visibility = 'visible';
         }
     }
     checkEntry();
 </script>
-    <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #002d72; font-family: Arial, "Microsoft JhengHei", sans-serif; padding: 20px; }
-        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
-        button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        #msgBox {
-    /* 移除 position: fixed; top: 50% 等舊屬性 */
-    color: #ff4d4f;
-    font-size: 0.85em;
-    display: none; /* 預設隱藏 */
-       }
-    </style>
+   
 </head>
 <body>
 
