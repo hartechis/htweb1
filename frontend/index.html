@@ -19,7 +19,7 @@
                 // Token 有效且在 8 小時內，自動跳轉到 Dashboard
                 window.location.replace('/dashboard/');
             } else {
-               / Token 無效或過期，明確刪除並留在登入頁
+               // Token 無效或過期，明確刪除並留在登入頁
                localStorage.removeItem('auth_token');
             }
           } catch (e) {
