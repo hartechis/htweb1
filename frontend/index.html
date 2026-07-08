@@ -21,10 +21,8 @@
             } else {
                / Token 無效或過期，明確刪除並留在登入頁
                localStorage.removeItem('auth_token');
-
             }
-        }
-        } catch (e) {
+          } catch (e) {
             console.error("驗證服務連線失敗");
         }
     }
