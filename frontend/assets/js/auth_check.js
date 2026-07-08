@@ -1,4 +1,4 @@
-/**
+/frontend/assets/js/auth_check.js
  * 權限驗證模組
  * 負責在頁面載入時檢查 LocalStorage 的 Token 是否有效
  */
