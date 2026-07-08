@@ -46,8 +46,8 @@ export async function onRequestPost(context) {
 
         // 6. 登入成功：生成 Token 並寫入 sessions 資料庫
         const token = crypto.randomUUID();
-        // 設定過期時間為 24 小時後
-        const expiresAt = new Date(Date.now() + 86400000).toISOString(); 
+        // 設定過期時間為 8 小時後
+        const expiresAt = new Date(Date.now() + 28800000).toISOString(); 
 
         await env.DB.prepare("INSERT INTO sessions (token, employee_id, expires_at) VALUES (?, ?, ?)")
             .bind(token, employee_id, expiresAt)
