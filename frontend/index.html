@@ -4,38 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聚大智能員工登入</title>
-     <style>
-        /* 預設隱藏整個頁面 */
-  body { visibility: hidden; } 
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #002d72; font-family: Arial, "Microsoft JhengHei", sans-serif; padding: 20px; }
+    <style>
+        /* 核心：預設隱藏整個頁面，並與原本的 body 樣式合併 */
+        body { 
+            visibility: hidden; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background-color: #002d72; 
+            font-family: Arial, "Microsoft JhengHei", sans-serif; 
+            padding: 20px; 
+        }
         .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 300px; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 14px; margin-top: 10px; background-color: #004a99; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
-        #msgBox {
-    /* 移除 position: fixed; top: 50% 等舊屬性 */
-    color: #ff4d4f;
-    font-size: 0.85em;
-    display: none; /* 預設隱藏 */
-       }
+        #msgBox { color: #ff4d4f; font-size: 0.85em; display: none; }
     </style>
     
     <script>
     async function checkEntry() {
         const token = localStorage.getItem('auth_token');
+        
         // 1. 沒有 Token，顯示登入頁面
         if (!token) {
             document.body.style.visibility = 'visible';
             return; 
         }
-        // 有 Token，去後端驗證 8 小時效期
+        
+        // 2. 有 Token，去後端驗證 8 小時效期
         try {
             const response = await fetch('/api/auth/verify', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
             if (response.ok) {
-                // Token 有效且在 8 小時內，自動跳轉到 Dashboard
+                // Token 有效，自動跳轉到 Dashboard
                 window.location.replace('/dashboard/');
             } else {
                // Token 無效或過期，明確刪除並留在登入頁
@@ -44,15 +50,15 @@
                localStorage.removeItem('empName'); 
                document.body.style.visibility = 'visible'; 
             }
-          } catch (e) {
+        } catch (e) {
             console.error("驗證服務連線失敗");
-            // 就算連線失敗，也要顯示登入頁讓使用者重試
             document.body.style.visibility = 'visible';
         }
     }
-    checkEntry();
-</script>
-   
+
+    // 核心修正：確保在 DOM 生成後才執行驗證，避免 document.body 為 null
+    document.addEventListener("DOMContentLoaded", checkEntry);
+    </script>
 </head>
 <body>
 
@@ -70,10 +76,10 @@
         <input type="password" id="pwd" placeholder="請輸入密碼" maxlength="5">
     </div>    
    
-<div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0; min-height: 20px;">
-    <a href="/set-password.html?mode=reset" style="font-size: 0.85em; color: #004a99; text-decoration: none;">重設密碼</a>
-    <div id="msgBox" style="color: #ff4d4f; font-size: 0.85em; display: none;"></div>
-</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0; min-height: 20px;">
+        <a href="/set-password.html?mode=reset" style="font-size: 0.85em; color: #004a99; text-decoration: none;">重設密碼</a>
+        <div id="msgBox"></div>
+    </div>
     
     <button onclick="login()">登入</button>   
 </div>
@@ -84,7 +90,6 @@ async function login() {
     const pwd = document.getElementById('pwd').value;
     const msgBox = document.getElementById('msgBox');
     
-    // 清除舊訊息
     msgBox.style.display = 'none';
     msgBox.innerText = '';
 
@@ -98,15 +103,11 @@ async function login() {
         const data = await res.json();
 
         if (data.status === 'first_login') {
-            // 首次登入導向設定密碼頁
             window.location.href = '/set-password.html?empId=' + encodeURIComponent(empId) + '&mode=first';
         } else if (res.status === 200) {
-            // --- 核心修改：存入工號與姓名 ---
             localStorage.setItem('empId', data.employee_id);
             localStorage.setItem('empName', data.name);
-            localStorage.setItem('auth_token', data.token); // 若有 token 也建議存入
-            
-            // 導向儀表板
+            localStorage.setItem('auth_token', data.token);
             window.location.replace('/dashboard/');
         } else {
             msgBox.innerText = data.error || '登入失敗';
