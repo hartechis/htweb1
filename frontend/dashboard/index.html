@@ -2,16 +2,73 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聚大智能系統</title>        
+    <title>聚大智能系統</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    
+    <style>
+        body { visibility: hidden; }
+    </style>
+
+    <script>
+    // 登出函式 (抽離出來以便全域調用)
+    function logout() {
+        localStorage.clear();
+        window.location.replace('/index.html');
+    }
+
+    async function init() {
+        const token = localStorage.getItem('auth_token');
+        
+        // 驗證 Token 是否存在
+        if (!token) {
+            window.location.replace('/index.html');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/verify', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                logout(); // 驗證失敗則登出
+            } else {
+                const data = await res.json();
+                
+                // 更新 UI
+                const display = document.getElementById('empIdDisplay');
+                if (data.employee_id && data.name) {
+                    display.innerText = `${data.employee_id} ${data.name}`;
+                    localStorage.setItem('empId', data.employee_id);
+                    localStorage.setItem('empName', data.name);
+                    
+                    // 2. 驗證通過，顯示頁面
+                    document.body.style.visibility = 'visible';
+                } else {
+                    display.innerText = "資料讀取異常";
+                    document.body.style.visibility = 'visible';
+                }
+            }
+        } catch (error) {
+            console.error('驗證失敗:', error);
+            window.location.replace('/index.html');
+        }
+    }
+
+    // 確保 DOM 完成後才執行初始化，避免錯誤
+    document.addEventListener("DOMContentLoaded", init);
+    </script>
 </head>
 <body>
 
 <header class="top-nav">
     <span class="menu-toggle" onclick="toggleMenu()">☰</span>
     <div class="logo-container">
-        <img src="/assets/harechLOGON3.png" alt="HARTECH Logo" style="height:40px;">
+    <a href="/dashboard/">
+        <img src="/assets/harechLOGON3.png" alt="HARTECH Logo" style="height:40px; border: none;">
+    </a>
     </div>
     <div class="nav-info">
         <span>歡迎回來，員工: <span id="empIdDisplay">載入中...</span></span>
@@ -22,7 +79,6 @@
 <div class="wrapper">
     <aside class="sidebar" id="sidebar">
         <ul>
-            <li><a href="/dashboard/">首頁</a></li>
             <li><a href="javascript:void(0);" onclick="openChatRoom()">內部聊天室</a></li>
             <li><a href="#">線上填報請出差</a></li>
             <li><a href="/form">自製表單</a></li>
@@ -46,61 +102,10 @@
     function openChatRoom() {
         const empId = localStorage.getItem('empId');
         const empName = localStorage.getItem('empName');
-        
-        // 預設房間設定：可根據您的需求改為從資料庫讀取，或預設為 'general'
         const roomName = 'general'; 
-        
-        // 設定身分：內部員工帶入 admin，外部人員帶入 client
-        // 此處可依照員工 ID 或類型動態判斷
         const role = 'admin'; 
-
-        // 導向聊天室，參數 rm 為房間名稱，i 為身分
         window.location.href = `/chat01.html?rm=${encodeURIComponent(roomName)}&i=${role}`;
     }
-
-    // 初始化驗證與 UI 更新
-    async function init() {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-            window.location.replace('/index.html');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/auth/verify', {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) {
-                logout();
-            } else {
-                const data = await res.json();
-                // 儲存資訊至 LocalStorage，供其他頁面使用
-                localStorage.setItem('empId', data.employee_id);
-                localStorage.setItem('empName', data.name);
-                
-                const display = document.getElementById('empIdDisplay');
-                if (data.employee_id && data.name) {
-                    display.innerText = `${data.employee_id} ${data.name}`;
-                } else {
-                    display.innerText = "資料讀取異常";
-                }
-            }
-        } catch (error) {
-            console.error('驗證失敗:', error);
-            window.location.replace('/index.html');
-        }
-    }
-
-    // 登出函式
-    function logout() {
-        localStorage.clear();
-        window.location.replace('/index.html');
-    }
-
-    // 頁面載入時執行初始化
-    init();
 </script>
 
 </body>
