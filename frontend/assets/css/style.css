@@ -1,0 +1,22 @@
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* 定義全站統一的按鈕樣式 */
+.btn-primary {
+    background-color: #003366;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+/* 定義 Logo 的統一大小 */
+.logo {
+    width: 150px;
+    height: auto;
+}
