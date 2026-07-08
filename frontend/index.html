@@ -20,10 +20,9 @@
                 window.location.replace('/dashboard/');
             } else {
                / Token 無效或過期，明確刪除並留在登入頁
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('empId');
-            localStorage.removeItem('empName');
-            console.log("Token 已失效，請重新登入。");
+               localStorage.removeItem('auth_token');
+
+            }
         }
         } catch (e) {
             console.error("驗證服務連線失敗");
