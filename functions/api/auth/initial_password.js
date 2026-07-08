@@ -1,4 +1,4 @@
-// functions/api/auth/initial password.js
+// functions/api/auth/initial password.js原始密碼
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
