@@ -5,14 +5,14 @@
     async function checkAuth() {
         const token = localStorage.getItem('auth_token');
 
-        // 1. 如果根本沒有 Token，直接踢回登入頁
+        // 1. 檢查 Token 是否存在
         if (!token) {
             window.location.replace('/index.html');
             return;
         }
 
         try {
-            // 2. 呼叫後端 verify API 進行驗證
+            // 2. 呼叫後端 API 驗證 Token 有效性
             const response = await fetch('/api/auth/verify', {
                 method: 'GET',
                 headers: {
@@ -21,36 +21,47 @@
                 }
             });
 
-            // 3. 如果後端回傳 401 Unauthorized，代表 Token 無效或已過期
+            // 3. 處理驗證結果
             if (response.status === 401) {
-                console.warn("驗證失敗，Token 已過期或無效。");
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('empId');
-                localStorage.removeItem('empName');
+                console.warn("Token 過期或無效，執行登出。");
+                localStorage.clear();
                 window.location.replace('/index.html');
-            } else if (response.ok) {
-                // 4. 驗證成功
+                return;
+            }
+
+            if (response.ok) {
                 const data = await response.json();
                 
-                // 更新使用者名稱顯示
+                // 儲存最新的員工資料到 localStorage
+                localStorage.setItem('empId', data.employee_id);
+                localStorage.setItem('empName', data.name);
+
+                // --- 自動更新 UI ---
+                
+                // A. 更新 Header 中的顯示名稱
                 const nameDisplay = document.getElementById('empIdDisplay');
                 if (nameDisplay) {
-                    nameDisplay.textContent = data.name;
+                    nameDisplay.textContent = `${data.employee_id} ${data.name}`;
                 }
 
-                // --- 關鍵修改：驗證成功才顯示 Dashboard 內容 ---
+                // B. 自動填入表單欄位 (若頁面存在這些 input)
+                const empInput = document.getElementById('formEmpId');
+                const nameInput = document.getElementById('formEmpName');
+                
+                if (empInput) empInput.value = data.employee_id;
+                if (nameInput) nameInput.value = data.name;
+
+                // --- 最後顯示畫面 ---
                 document.body.style.visibility = 'visible';
             } else {
-                // 其他非 200/401 的狀態，保守起見導回
                 window.location.replace('/index.html');
             }
         } catch (error) {
-            console.error("驗證連線發生錯誤:", error);
-            // 發生網路錯誤時，若已在 Dashboard 則嘗試重新整理，否則回登入頁
+            console.error("驗證連線失敗:", error);
             window.location.replace('/index.html');
         }
     }
 
-    // 確保 DOM 結構已載入後才執行驗證，防止 document.body 為 null
+    // 確保 DOM 載入後執行
     document.addEventListener("DOMContentLoaded", checkAuth);
 })();
