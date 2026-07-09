@@ -10,7 +10,7 @@
         .wrapper { display: flex; flex: 1; overflow: hidden; }
 
         /* 側邊選單 */
-        .sidebar { width:15%; max-width: 150px; background-color: #002d72; color: white; transition: all 0.3s ease; overflow-y: auto; }
+        .sidebar { width:20%; max-width: 200px; background-color: #002d72; color: white; transition: all 0.3s ease; overflow-y: auto; }
         .sidebar ul { list-style: none; padding: 0; }
         .sidebar ul li a { padding: 15px 20px; display: block; color: #ddd; text-decoration: none; border-bottom: 1px solid #004a99; }
         .sidebar ul li a:hover { background: #004a99; color: white; }
