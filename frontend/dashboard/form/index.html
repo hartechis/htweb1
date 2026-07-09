@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>自製表單 | 聚大智能系統</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <main class="main-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>餐點訂購表單</h1>
+            <button onclick="switchView('query')" id="btnQuery">查詢所有訂單</button>
+            <button onclick="switchView('form')" id="btnForm" style="display:none;">回填單頁面</button>
+        </div>
+        <hr>
+
+        <div id="form-area">
+            <label>工號：<input type="text" id="formEmpId" readonly></label>
+            <label>姓名：<input type="text" id="formEmpName" readonly></label>
+            <label>餐點：<input type="text" id="meal" placeholder="例如：排骨飯"></label>
+            <label>數量：<input type="number" id="qty" value="1"></label>
+            <button onclick="submitOrder()">送出訂單</button>
+        </div>
+
+        <div id="query-area" style="display:none;">
+            <table border="1" style="width:100%; border-collapse:collapse; margin-top:10px;">
+                <thead><tr><th>工號</th><th>姓名</th><th>餐點</th><th>數量</th></tr></thead>
+                <tbody id="orderList"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // 初始化頁面
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('formEmpId').value = localStorage.getItem('empId');
+            document.getElementById('formEmpName').value = localStorage.getItem('empName');
+        });
+
+        // 切換視圖
+        function switchView(view) {
+            document.getElementById('form-area').style.display = view === 'form' ? 'block' : 'none';
+            document.getElementById('query-area').style.display = view === 'query' ? 'block' : 'none';
+            document.getElementById('btnQuery').style.display = view === 'form' ? 'block' : 'none';
+            document.getElementById('btnForm').style.display = view === 'query' ? 'block' : 'none';
+            if(view === 'query') loadOrders();
+        }
+
+        // 送出表單 (請改為您的 API 路徑)
+        async function submitOrder() {
+            const data = {
+                empId: document.getElementById('formEmpId').value,
+                name: document.getElementById('formEmpName').value,
+                meal: document.getElementById('meal').value,
+                qty: document.getElementById('qty').value
+            };
+            const res = await fetch('/api/orders', { method: 'POST', body: JSON.stringify(data) });
+            if (res.ok) { alert('送出成功'); switchView('query'); }
+        }
+
+        // 載入查詢資料 (請改為您的 API 路徑)
+        async function loadOrders() {
+            const res = await fetch('/api/orders');
+            const list = await res.json();
+            const tbody = document.getElementById('orderList');
+            tbody.innerHTML = list.map(item => `<tr><td>${item.empId}</td><td>${item.name}</td><td>${item.meal}</td><td>${item.qty}</td></tr>`).join('');
+        }
+    </script>
+</body>
+</html>
