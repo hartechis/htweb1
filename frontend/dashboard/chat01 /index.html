@@ -6,7 +6,7 @@
     <title>即時通訊平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 防閃爍：預設隱藏，直到 JS 驗證完成 */
+        /* 防閃爍：預設隱藏，直到 auth_check.js 驗證完成 */
         body { visibility: hidden; }
         
         .pb-safe { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)); }
@@ -14,6 +14,8 @@
         #chatBox::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
         .touch-target { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
     </style>
+    
+    <script src="/assets/js/auth_check.js"></script>
 </head>
 <body class="bg-slate-900 h-[100dvh] w-full flex flex-col max-w-md mx-auto shadow-2xl overflow-hidden text-gray-800">
 
@@ -40,23 +42,6 @@
         <img id="modalImg" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain" src="">
     </div>
 
-    <div id="fileModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-6">
-        <div class="bg-white rounded-2xl p-5 w-full max-w-sm shadow-2xl space-y-4">
-            <div class="flex items-center gap-3 border-b pb-3">
-                <span class="text-2xl">📁</span>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-semibold text-gray-500">檔案確認</h3>
-                    <p id="popFileName" class="text-base font-bold text-gray-900 truncate mt-0.5">檔案.xlsx</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2.5 pt-2">
-                <button id="popOpenBtn" class="bg-slate-100 py-2.5 rounded-xl text-sm">直接開啟</button>
-                <button id="popDownloadBtn" class="bg-emerald-600 text-white py-2.5 rounded-xl text-sm">確認下載</button>
-            </div>
-            <button onclick="closeFileModal()" class="w-full text-center text-xs text-gray-400">取消</button>
-        </div>
-    </div>
-
     <script>
         const API_BASE = "";
         const params = new URLSearchParams(window.location.search);
@@ -65,20 +50,26 @@
         
         document.getElementById('roomName').innerText = rm;
 
-        // 權限檢查邏輯
-        async function checkAuth() {
-            const token = localStorage.getItem('auth_token');
-            if (!token) {
-                window.location.replace('/index.html');
-                return false;
-            }
-            // 這裡可以呼叫您的 verify API 進行二次確認
-            return true;
-        }
-
         let allMessages = [];
-        let displayedCount = 15;
         let es = null;
+
+        // --- 核心入口：在 DOMContentLoaded 之後初始化 ---
+        // 注意：auth_check.js 也監聽 DOMContentLoaded，它執行完會把 visibility 設為 visible
+        document.addEventListener("DOMContentLoaded", () => {
+            initSSE();
+        });
+
+        function initSSE() {
+            es = new EventSource(`${API_BASE}/chat01?rm=${encodeURIComponent(rm)}`);
+            es.addEventListener('history', e => {
+                allMessages = JSON.parse(e.data);
+                renderChatView();
+            });
+            es.addEventListener('message', e => {
+                allMessages.push(JSON.parse(e.data));
+                renderChatView();
+            });
+        }
 
         // --- UI 渲染函式 ---
         function appendMessageToDOM(data) {
@@ -111,36 +102,11 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // --- 核心入口 ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            const authenticated = await checkAuth();
-            if (authenticated) {
-                // 初始化連線
-                initSSE();
-                // 顯示頁面
-                document.body.style.visibility = 'visible';
-            }
-        });
-
-        function initSSE() {
-            es = new EventSource(`${API_BASE}/chat01?rm=${encodeURIComponent(rm)}`);
-            es.addEventListener('history', e => {
-                allMessages = JSON.parse(e.data);
-                renderChatView();
-            });
-            es.addEventListener('message', e => {
-                allMessages.push(JSON.parse(e.data));
-                renderChatView();
-            });
-        }
-        
-        // 放大圖片與發送訊息的邏輯 (沿用您的處理即可)
         function zoom(url) {
             document.getElementById('modalImg').src = url;
             document.getElementById('imageModal').classList.remove('hidden');
         }
         function closeZoom() { document.getElementById('imageModal').classList.add('hidden'); }
-        function closeFileModal() { document.getElementById('fileModal').classList.add('hidden'); }
     </script>
 </body>
 </html>
