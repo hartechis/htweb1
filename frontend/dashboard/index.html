@@ -6,70 +6,21 @@
     <title>聚大智能系統</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     
-    <style>
-        body { visibility: hidden; }
-    </style>
-
-    <script>
-    // 登出函式 (抽離出來以便全域調用)
-    function logout() {
-        localStorage.clear();
-        window.location.replace('/index.html');
-    }
-
-    async function init() {
-        const token = localStorage.getItem('auth_token');
-        
-        // 驗證 Token 是否存在
-        if (!token) {
-            window.location.replace('/index.html');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/auth/verify', {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) {
-                logout(); // 驗證失敗則登出
-            } else {
-                const data = await res.json();
-                
-                // 更新 UI
-                const display = document.getElementById('empIdDisplay');
-                if (data.employee_id && data.name) {
-                    display.innerText = `${data.employee_id} ${data.name}`;
-                    localStorage.setItem('empId', data.employee_id);
-                    localStorage.setItem('empName', data.name);
-                    
-                    // 2. 驗證通過，顯示頁面
-                    document.body.style.visibility = 'visible';
-                } else {
-                    display.innerText = "資料讀取異常";
-                    document.body.style.visibility = 'visible';
-                }
-            }
-        } catch (error) {
-            console.error('驗證失敗:', error);
-            window.location.replace('/index.html');
-        }
-    }
-
-    // 確保 DOM 完成後才執行初始化，避免錯誤
-    document.addEventListener("DOMContentLoaded", init);
-    </script>
+    <style>body { visibility: hidden; }</style>
+    
+    <script src="/assets/js/auth_check.js"></script>
 </head>
 <body>
 
 <header class="top-nav">
-    <span class="menu-toggle" onclick="toggleMenu()">☰</span>
+    <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    
     <div class="logo-container">
-    <a href="/dashboard/">
-        <img src="/assets/harechLOGON3.png" alt="HARTECH Logo" style="height:40px; border: none;">
-    </a>
+        <a href="/dashboard/">
+            <img src="/assets/harechLOGON3.png" alt="HARTECH Logo" style="height:40px; border: none;">
+        </a>
     </div>
+    
     <div class="nav-info">
         <span>歡迎回來，員工: <span id="empIdDisplay">載入中...</span></span>
         <button onclick="logout()">登出</button>
@@ -79,11 +30,10 @@
 <div class="wrapper">
     <aside class="sidebar" id="sidebar">
         <ul>
-            <li><a href="/dashboard/form/">測試表單</a></li>
+            <li><a href="/dashboard/form/">餐點訂購表單</a></li>
             <li><a href="javascript:void(0);" onclick="openChatRoom()">內部聊天室</a></li>
             <li><a href="#">線上填報請出差</a></li>
-            <li><a href="/form">自製表單</a></li>
-            <li><a href="#" onclick="logout()">登出系統</a></li>
+            <li><a href="javascript:void(0);" onclick="logout()">登出系統</a></li>
         </ul>
     </aside>
 
@@ -92,20 +42,25 @@
         <p>請從左側選單選擇功能。</p>
     </main>
 </div>
-    
+
 <script>
-    // 切換側邊選單
-    function toggleMenu() {
+    // 漢堡選單切換 (對應 style.css 中的 .sidebar.active)
+    function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    // 登出函式 (供按鈕呼叫)
+    function logout() {
+        localStorage.clear();
+        window.location.replace('/index.html');
     }
 
     // 聊天室導向邏輯
     function openChatRoom() {
         const empId = localStorage.getItem('empId');
         const empName = localStorage.getItem('empName');
-        const roomName = 'general'; 
         const role = 'admin'; 
-        window.location.href = `/chat01.html?rm=${encodeURIComponent(roomName)}&i=${role}`;
+        window.location.href = `/chat01.html?rm=general&i=${role}`;
     }
 </script>
 
