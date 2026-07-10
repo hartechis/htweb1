@@ -17,12 +17,14 @@
 <body>
 
 <header class="top-nav">
+    <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    
     <div class="logo-container">
         <a href="/dashboard/"><img src="/assets/harechLOGON3.png" alt="Logo" style="height:40px;"></a>
     </div>
     <div class="nav-info">
         <span>歡迎回來，<span id="empIdDisplay">載入中...</span></span>
-        <button onclick="localStorage.clear(); window.location.replace('/index.html');">登出</button>
+        <button onclick="logout()">登出</button>
     </div>
 </header>
 
@@ -64,10 +66,25 @@
 </div>
 
 <script>
+    // 側邊選單切換
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    // 登出函式
+    function logout() {
+        localStorage.clear();
+        window.location.replace('/index.html');
+    }
+
     // 切換頁面視圖
     function switchView(viewName) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
         document.getElementById('view-' + viewName).classList.add('active-view');
+        // 如果是手機版，切換後自動關閉選單
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('active');
+        }
         if (viewName === 'query') loadOrders();
     }
 
