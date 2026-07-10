@@ -41,7 +41,7 @@
                 // A. 更新 Header 中的顯示名稱
                 const nameDisplay = document.getElementById('empIdDisplay');
                 if (nameDisplay) {
-                    nameDisplay.textContent = `${data.employee_id} ${data.name}`;
+                    nameDisplay.textContent = `${data.employee_id}${data.name}`;
                 }
 
                 // B. 自動填入表單欄位 (若頁面存在這些 input)
