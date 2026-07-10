@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>內部傳訊管理 | 聚大智能系統</title>
+    <title>聊天管理中心 | 聚大智能系統</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
         body { visibility: hidden; }
-        .room-item { cursor: pointer; padding: 15px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; }
-        .room-item:hover { background: #f0f0f0; }
+        .room-item { cursor: pointer; padding: 15px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; transition: 0.2s; }
+        .room-item:hover { background: #f0f0f0; border-color: #002d72; }
     </style>
     <script src="/assets/js/auth_check.js"></script>
 </head>
@@ -27,22 +27,26 @@
 <div class="wrapper">
     <aside class="sidebar" id="sidebar">
         <ul>
-            <li><a href="/dashboard/">回到首頁</a></li>
+            <li><a href="/dashboard/">⬅ 回到首頁</a></li>
+            <li style="border-bottom: 1px solid #004a99; margin: 5px 0;"></li>
+            
+            <li><a href="javascript:void(0);" onclick="scrollToSection('new-room')">新建聊天室</a></li>
+            <li><a href="javascript:void(0);" onclick="scrollToSection('room-list')">現有房間列表</a></li>
         </ul>
     </aside>
 
     <main class="main-content">
         <h2>聊天管理中心</h2>
         
-        <section style="margin-bottom: 30px;">
+        <section id="new-room" style="margin-bottom: 40px;">
             <h3>新建聊天室</h3>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="newRoomId" placeholder="輸入房間代號 (例如: project-a)" style="padding: 8px; flex: 1;">
-                <button onclick="goToRoom()">建立/加入</button>
+            <div style="display: flex; gap: 10px; max-width: 400px;">
+                <input type="text" id="newRoomId" placeholder="輸入房間代號 (例如: sales-team)" style="padding: 10px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
+                <button onclick="goToRoom()" style="padding: 10px 20px; background: #002d72; color: white; border: none; border-radius: 4px; cursor: pointer;">進入</button>
             </div>
         </section>
 
-        <section>
+        <section id="room-list">
             <h3>現有房間列表</h3>
             <div id="roomList">載入中...</div>
         </section>
@@ -50,12 +54,22 @@
 </div>
 
 <script>
+    // 漢堡選單切換
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-    
-    // 跳轉到指定房間
+
+    // 登出函式
+    function logout() { localStorage.clear(); window.location.replace('/index.html'); }
+
+    // 頁面內錨點滑動
+    function scrollToSection(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        if(window.innerWidth <= 768) toggleSidebar(); // 手機版選完自動關閉選單
+    }
+
+    // 進入房間邏輯
     function goToRoom() {
         const roomId = document.getElementById('newRoomId').value.trim();
-        if (roomId) window.location.href = `/chat01.html?rm=${encodeURIComponent(roomId)}`;
+        if (roomId) window.location.href = `/dashboard/chat01/?rm=${encodeURIComponent(roomId)}`;
     }
 
     // 載入房間列表
@@ -65,16 +79,16 @@
             const rooms = await res.json();
             const container = document.getElementById('roomList');
             if (rooms.length === 0) {
-                container.innerHTML = "目前沒有聊天記錄。";
+                container.innerHTML = "<p>目前沒有聊天記錄。</p>";
                 return;
             }
             container.innerHTML = rooms.map(r => `
-                <div class="room-item" onclick="window.location.href='/chat01.html?rm=${encodeURIComponent(r.room)}'">
+                <div class="room-item" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
                     <strong>房間代號: ${r.room}</strong>
                 </div>
             `).join('');
         } catch (e) {
-            document.getElementById('roomList').innerHTML = "無法載入房間。";
+            document.getElementById('roomList').innerHTML = "無法載入房間清單。";
         }
     }
 
