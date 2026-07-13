@@ -31,7 +31,8 @@
 
             if (response.ok) {
                 const data = await response.json();
-                
+                console.error("【除錯】驗證 API 請求失敗，狀態碼:", response.status);
+    console.error("【除錯】請確認 localStorage 裡的 Token 是否正確:", localStorage.getItem('auth_token'));
                 // 儲存最新的員工資料到 localStorage
                 localStorage.setItem('empId', data.employee_id);
                 localStorage.setItem('empName', data.name);
