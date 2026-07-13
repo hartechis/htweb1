@@ -49,15 +49,7 @@
         window.location.replace('/index.html'); 
     }
 
-    // 進入房間邏輯
-    function goToRoom() {
-        const roomId = document.getElementById('newRoomId').value.trim();
-        if (roomId) {
-            window.location.href = `/dashboard/chat01/?rm=${encodeURIComponent(roomId)}`;
-        } else {
-            alert("請輸入房間代號");
-        }
-    }
+   
 
     // 為了保險起見，強制讓 body 在驗證完後顯示
     // 如果 auth_check.js 沒設定好，這行保證頁面不會一片空白
