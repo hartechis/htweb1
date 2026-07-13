@@ -73,16 +73,23 @@
     }
 
     async function loadRooms() {
-        try {
-            const token = localStorage.getItem('auth_token'); 
-            
-            const res = await fetch('/api/chat/rooms', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            }); // 這裡補上 fetch 的結束括號
+    try {
+        // 直接打印出來看抓到了沒
+        const token = localStorage.getItem('auth_token');
+        console.log("CHAT 頁面抓到的 Token:", token); // <--- 請看 F12 Console 有沒有印出東西
+
+        if (!token) {
+            console.error("錯誤：抓不到 auth_token！");
+            return;
+        }
+
+        const res = await fetch('/api/chat/rooms', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`, // 確保這裡用的名稱跟上面一致
+                'Content-Type': 'application/json'
+            }
+        });
 
             if (!res.ok) throw new Error("驗證失敗或請求錯誤");
 
