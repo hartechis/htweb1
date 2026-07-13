@@ -48,14 +48,8 @@
         localStorage.clear(); 
         window.location.replace('/index.html'); 
     }
+ 
 
-   
-
-    // 為了保險起見，強制讓 body 在驗證完後顯示
-    // 如果 auth_check.js 沒設定好，這行保證頁面不會一片空白
-    window.addEventListener('load', () => {
-        document.body.style.visibility = 'visible';
-    });
 </script>
 
 </body>
