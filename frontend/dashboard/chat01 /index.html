@@ -83,7 +83,9 @@
                 // 將 Token 帶入 Header，這樣後端的驗證機制就會認得您已登入
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+             }
+            // 確保 DOM 完全載入後才執行，避免找不到 HTML 元素的問題
+    document.addEventListener("DOMContentLoaded", loadRooms);
         });
 
         if (!res.ok) throw new Error("驗證失敗或請求錯誤");
