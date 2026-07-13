@@ -74,22 +74,22 @@
 
     async function loadRooms() {
     try {
-        const container = document.getElementById('roomList');
-        container.innerHTML = "正在測試讀取中...";
-
-        // 1. 完全拿掉 Authorization Header 測試
-        // 如果您的後端 API 沒有強制要求一定要驗證，這樣就能直接撈到資料
+        // 從 LocalStorage 取得登入後的 token
+        const token = localStorage.getItem('token'); 
+        
         const res = await fetch('/api/chat/rooms', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                // 將 Token 帶入 Header，這樣後端的驗證機制就會認得您已登入
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        // 2. 如果還是不行，把 fetch 直接換成測試用的假資料
-        // const rooms = [{ room: "test-room" }]; 
-        
-        if (!res.ok) throw new Error("API 請求失敗，狀態碼: " + res.status);
+        if (!res.ok) throw new Error("驗證失敗或請求錯誤");
 
         const rooms = await res.json();
+        const container = document.getElementById('roomList');
         
         if (rooms.length === 0) {
             container.innerHTML = "<p>目前沒有聊天記錄。</p>";
@@ -97,19 +97,16 @@
         }
         
         container.innerHTML = rooms.map(r => `
-            <div class="room-item" style="border: 1px solid #ddd; padding: 10px; margin: 5px; cursor: pointer;"
-                 onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
-                <strong>測試房間: ${r.room}</strong>
+            <div class="room-item" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
+                <strong>房間代號: ${r.room}</strong>
             </div>
         `).join('');
         
     } catch (e) {
         console.error(e);
-        // 顯示具體錯誤，這樣您才知道是網路問題還是語法問題
-        document.getElementById('roomList').innerHTML = "測試錯誤: " + e.message;
+        document.getElementById('roomList').innerHTML = "無法載入房間清單，請確認是否已登入。";
     }
 }
-document.addEventListener("DOMContentLoaded", loadRooms);
 </script>
 
 </body>
