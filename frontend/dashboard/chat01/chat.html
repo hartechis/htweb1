@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>即時通訊平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 防閃爍：預設隱藏，直到 auth_check.js 驗證完成 */
+        body { visibility: hidden; }
+        
+        .pb-safe { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)); }
+        #chatBox::-webkit-scrollbar { width: 4px; }
+        #chatBox::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+        .touch-target { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    </style>
+    
+    <script src="/assets/js/auth_check.js"></script>
+</head>
+<body class="bg-slate-900 h-[100dvh] w-full flex flex-col max-w-md mx-auto shadow-2xl overflow-hidden text-gray-800">
+
+    <header class="bg-[#1e2a38] text-white p-4 font-bold shrink-0 shadow-md flex justify-between items-center">
+        <span>☁️ 雲端通訊：<span id="roomName"></span></span>
+        <span class="text-xs text-gray-400">往上滾動查歷史</span>
+    </header>
+    
+    <main id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-4 bg-[#7493a7] overscroll-contain transition-opacity duration-150">
+    </main>
+    
+    <footer class="bg-white p-3 px-4 border-t flex flex-col gap-2 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-safe w-full box-border">
+        <div id="uploadStatus" class="hidden text-xs text-blue-600 font-medium animate-pulse"></div>
+        <form action="javascript:void(0);" autocomplete="off" class="flex gap-2 items-center w-full">
+            <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 p-2.5 rounded-lg text-xl transition-colors shrink-0 select-none">
+                📷<input type="file" id="fileInput" accept="*/*" class="hidden" multiple>
+            </label>
+            <input type="search" id="inputBar" autocomplete="off" class="min-w-0 flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-emerald-600 transition-colors" placeholder="內容...">
+            <button id="sendBtn" type="button" class="w-16 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-2 rounded-lg font-medium transition-all shrink-0 text-center">發送</button>
+        </form>
+    </footer>
+
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center cursor-pointer z-50 p-4" onclick="closeZoom()">
+        <img id="modalImg" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain" src="">
+    </div>
+
+    <script>
+        const API_BASE = "";
+        const params = new URLSearchParams(window.location.search);
+        const rm = params.get('rm') || 'general';
+        const myRole = params.get('i') === 'admin' ? 'admin' : 'client'; 
+        
+        document.getElementById('roomName').innerText = rm;
+
+        let allMessages = [];
+        let es = null;
+
+        // --- 核心入口：在 DOMContentLoaded 之後初始化 ---
+        // 注意：auth_check.js 也監聽 DOMContentLoaded，它執行完會把 visibility 設為 visible
+        document.addEventListener("DOMContentLoaded", () => {
+            initSSE();
+        });
+
+        function initSSE() {
+            es = new EventSource(`${API_BASE}/chat01?rm=${encodeURIComponent(rm)}`);
+            es.addEventListener('history', e => {
+                allMessages = JSON.parse(e.data);
+                renderChatView();
+            });
+            es.addEventListener('message', e => {
+                allMessages.push(JSON.parse(e.data));
+                renderChatView();
+            });
+        }
+
+        // --- UI 渲染函式 ---
+        function appendMessageToDOM(data) {
+            const chatBox = document.getElementById('chatBox');
+            const isMe = data.sender === myRole;
+            const msgRow = document.createElement('div');
+            msgRow.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5 w-full`;
+            
+            const contentRow = document.createElement('div');
+            contentRow.className = `flex items-end gap-1.5 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = `px-4 py-2.5 rounded-2xl break-all ${isMe ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-white rounded-tl-none'}`;
+            
+            if (data.type === 'text') {
+                bubbleDiv.innerText = data.content;
+            } else if (data.type === 'image') {
+                bubbleDiv.innerHTML = `<img src="${data.content}" class="max-w-[150px] cursor-pointer" onclick="zoom('${data.content}')">`;
+            }
+            
+            contentRow.appendChild(bubbleDiv);
+            msgRow.appendChild(contentRow);
+            chatBox.appendChild(msgRow);
+        }
+
+        function renderChatView() {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+            allMessages.forEach(appendMessageToDOM);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function zoom(url) {
+            document.getElementById('modalImg').src = url;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeZoom() { document.getElementById('imageModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
