@@ -6,18 +6,17 @@
     <title>聊天管理中心 | 聚大智能系統</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
+        /* 預設隱藏，避免閃爍，等待 auth_check.js 驗證後才會改為 visible */
         body { visibility: hidden; }
         .view-section { display: none; }
         .active-view { display: block; }
     </style>
-
     <script src="/assets/js/auth_check.js"></script>
 </head>
 <body>
 
 <header class="top-nav">
     <span class="hamburger" onclick="toggleSidebar()">☰</span>
-    
     <div class="logo-container">
         <a href="/dashboard/"><img src="/assets/harechLOGON3.png" alt="Logo" style="height:40px;"></a>
     </div>
@@ -38,7 +37,7 @@
 
     <main class="main-content">
         <h2>聊天管理中心</h2>
-         <section id="new-room" style="margin-bottom: 40px;">
+        <section id="new-room" style="margin-bottom: 40px;">
             <h3>新建聊天室</h3>
             <div style="display: flex; gap: 10px; max-width: 400px;">
                 <input type="text" id="newRoomId" placeholder="輸入房間代號 (例如: sales-team)" style="padding: 10px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
@@ -63,7 +62,7 @@
     // 頁面內錨點滑動
     function scrollToSection(id) {
         document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        if(window.innerWidth <= 768) toggleSidebar(); // 手機版選完自動關閉選單
+        if(window.innerWidth <= 768) toggleSidebar();
     }
 
     // 進入房間邏輯
@@ -72,41 +71,47 @@
         if (roomId) window.location.href = `/dashboard/chat01/?rm=${encodeURIComponent(roomId)}`;
     }
 
+    // 資料載入核心函式
     async function loadRooms() {
-    try {
-        // 從 LocalStorage 取得登入後的 token
-        const token = localStorage.getItem('token'); 
-        
-        const res = await fetch('/api/chat/rooms', {
-            method: 'GET',
-            headers: {
-                // 將 Token 帶入 Header，這樣後端的驗證機制就會認得您已登入
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!res.ok) throw new Error("驗證失敗或請求錯誤");
-
-        const rooms = await res.json();
         const container = document.getElementById('roomList');
+        // 【修正】統一使用 auth_token
+        const token = localStorage.getItem('auth_token'); 
         
-        if (rooms.length === 0) {
-            container.innerHTML = "<p>目前沒有聊天記錄。</p>";
-            return;
+        try {
+            const res = await fetch('/api/chat/rooms', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!res.ok) throw new Error("API 回傳狀態錯誤: " + res.status);
+
+            const rooms = await res.json();
+            
+            if (rooms.length === 0) {
+                container.innerHTML = "<p>目前沒有聊天記錄。</p>";
+                return;
+            }
+            
+            container.innerHTML = rooms.map(r => `
+                <div class="room-item" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
+                    <strong>房間代號: ${r.room}</strong>
+                </div>
+            `).join('');
+            
+        } catch (e) {
+            console.error("載入房間清單錯誤:", e);
+            container.innerHTML = "無法載入房間清單，請確認登入狀態是否已過期。";
         }
-        
-        container.innerHTML = rooms.map(r => `
-            <div class="room-item" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
-                <strong>房間代號: ${r.room}</strong>
-            </div>
-        `).join('');
-        
-    } catch (e) {
-        console.error(e);
-        document.getElementById('roomList').innerHTML = "無法載入房間清單，請確認是否已登入。";
     }
-}
+
+    // 【關鍵修改】確保在 DOM 完全載入後才執行初始化邏輯
+    document.addEventListener("DOMContentLoaded", () => {
+        // 設定一個全域函數，讓 auth_check.js 驗證完成後呼叫
+        window.initChatPage = loadRooms;
+    });
 </script>
 
 </body>
