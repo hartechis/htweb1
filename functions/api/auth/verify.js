@@ -1,27 +1,26 @@
-//functions/api/auth/verify.js
+// functions/api/auth/verify.js
+import { verifyToken } from '../../utils/auth.js';
+
 function getCorsHeaders() {
-    return { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" };
+    return { 
+        "Access-Control-Allow-Origin": "*", 
+        "Access-Control-Allow-Methods": "GET, OPTIONS", 
+        "Access-Control-Allow-Headers": "Content-Type, Authorization" 
+    };
 }
 
 export async function onRequestGet(context) {
-    const { request, env } = context;
-    const authHeader = request.headers.get('Authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
-    // 1. 先從 sessions 表找到對應的 employee_id
-    const session = await env.DB.prepare("SELECT employee_id FROM sessions WHERE token = ? AND expires_at > ?")
-        .bind(token, new Date().toISOString()).first();
+    // 呼叫共用驗證邏輯
+    const user = await verifyToken(context.request, context.env);
 
-    if (!session) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: getCorsHeaders() });
+    if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+            status: 401, 
+            headers: getCorsHeaders() 
+        });
     }
-    
-    // 2. 從 employees 表撈取該員工的姓名
-    const user = await env.DB.prepare("SELECT employee_id, name FROM employees WHERE employee_id = ?")
-        .bind(session.employee_id)
-        .first();
 
-    // 3. 回傳 employee_id 與 name
+    // 回傳結果 (保持原有的 JSON 結構，不會影響前端！)
     return new Response(JSON.stringify({ 
         employee_id: user.employee_id,
         name: user.name 
