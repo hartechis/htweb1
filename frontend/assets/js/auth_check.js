@@ -7,7 +7,7 @@
 
         // 1. 檢查 Token 是否存在
         if (!token) {
-            window.location.replace('/index.html');
+           console.error("【除錯】沒找到 Token，如果不跳轉，頁面會發生什麼？");
             return;
         }
 
@@ -25,7 +25,7 @@
             if (response.status === 401) {
                 console.warn("Token 過期或無效，執行登出。");
                 localStorage.clear();
-                window.location.replace('/index.html');
+               console.error("【除錯】Token 無效，但我們先停在這裡...");
                 return;
             }
 
@@ -58,7 +58,7 @@
             }
         } catch (error) {
             console.error("驗證連線失敗:", error);
-            window.location.replace('/index.html');
+            
         }
     }
 
