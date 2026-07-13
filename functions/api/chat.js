@@ -1,7 +1,19 @@
-//functions/api/chat.js
+import { verifyToken } from '../utils/auth.js';
 
 export async function onRequest(context) {
     const { request, env } = context;
+    
+    // --- 新增：強制驗證 ---
+    // 呼叫共用驗證邏輯，若未通過直接拒絕
+    const user = await verifyToken(request, env);
+    if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { 
+            status: 401,
+            headers: { "Content-Type": "application/json" }
+        });
+    }
+    // ----------------------
+
     const url = new URL(request.url);
     const room = url.searchParams.get('rm') || 'default';
 
@@ -17,11 +29,14 @@ export async function onRequest(context) {
             httpMetadata: { contentType: contentType },
             customMetadata: { originalName: originalName }
         });
-        return new Response(JSON.stringify({ url: `/api/media/${storedFilename}`, name: originalName }), { status: 200 });
+        
+        return new Response(JSON.stringify({ url: `/api/media/${storedFilename}`, name: originalName }), { 
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
     }
 
     // 2. 處理查詢聊天室列表 (GET /api/chat/rooms)
-    // 這是給「聊天管理中心」用的
     if (request.method === "GET" && url.pathname.includes("/rooms")) {
         const { results } = await env.DB.prepare(
             "SELECT DISTINCT room FROM chat_messages ORDER BY MAX(created_at) DESC"
