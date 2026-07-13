@@ -1,4 +1,4 @@
-// /frontend/assets/js/auth_check.js 權限驗證模組
+// frontend/assets/js/auth_check.js 權限驗證模組
 // 負責在頁面載入時檢查 LocalStorage 的 Token 是否有效並防止畫面閃爍
 
 (function() {
@@ -7,7 +7,7 @@
 
         // 1. 檢查 Token 是否存在
         if (!token) {
-           console.error("【除錯】沒找到 Token，如果不跳轉，頁面會發生什麼？");
+            window.location.replace('/index.html');
             return;
         }
 
@@ -25,7 +25,7 @@
             if (response.status === 401) {
                 console.warn("Token 過期或無效，執行登出。");
                 localStorage.clear();
-               console.error("【除錯】Token 無效，但我們先停在這裡...");
+                window.location.replace('/index.html');
                 return;
             }
 
@@ -58,7 +58,7 @@
             }
         } catch (error) {
             console.error("驗證連線失敗:", error);
-            
+            window.location.replace('/index.html');
         }
     }
 
