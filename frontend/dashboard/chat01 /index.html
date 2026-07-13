@@ -74,7 +74,7 @@
 
     async function loadRooms() {
         try {
-            const token = localStorage.getItem('token'); 
+            const token = localStorage.getItem('auth_token'); 
             
             const res = await fetch('/api/chat/rooms', {
                 method: 'GET',
