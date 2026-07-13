@@ -6,17 +6,13 @@
     <title>聊天管理中心 | 聚大智能系統</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
-        /* 預設隱藏，避免閃爍，等待 auth_check.js 驗證後才會改為 visible */
         body { visibility: hidden; }
-        .view-section { display: none; }
-        .active-view { display: block; }
     </style>
     <script src="/assets/js/auth_check.js"></script>
 </head>
 <body>
 
 <header class="top-nav">
-    <span class="hamburger" onclick="toggleSidebar()">☰</span>
     <div class="logo-container">
         <a href="/dashboard/"><img src="/assets/harechLOGON3.png" alt="Logo" style="height:40px;"></a>
     </div>
@@ -31,7 +27,6 @@
         <ul>
             <li><a href="/dashboard/">⬅ 回到首頁</a></li>
             <li><a href="javascript:void(0);" onclick="scrollToSection('new-room')">新建聊天室</a></li>
-            <li><a href="javascript:void(0);" onclick="scrollToSection('room-list')">現有房間列表</a></li>
         </ul>
     </aside>
 
@@ -40,77 +35,34 @@
         <section id="new-room" style="margin-bottom: 40px;">
             <h3>新建聊天室</h3>
             <div style="display: flex; gap: 10px; max-width: 400px;">
-                <input type="text" id="newRoomId" placeholder="輸入房間代號 (例如: sales-team)" style="padding: 10px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" id="newRoomId" placeholder="輸入房間代號" style="padding: 10px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
                 <button onclick="goToRoom()" style="padding: 10px 20px; background: #002d72; color: white; border: none; border-radius: 4px; cursor: pointer;">進入</button>
             </div>
-        </section>
-
-        <section id="room-list">
-            <h3>現有房間列表</h3>
-            <div id="roomList">載入中...</div>
         </section>
     </main>
 </div>
 
 <script>
-    // 漢堡選單切換
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-
     // 登出函式
-    function logout() { localStorage.clear(); window.location.replace('/index.html'); }
-
-    // 頁面內錨點滑動
-    function scrollToSection(id) {
-        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        if(window.innerWidth <= 768) toggleSidebar();
+    function logout() { 
+        localStorage.clear(); 
+        window.location.replace('/index.html'); 
     }
 
     // 進入房間邏輯
     function goToRoom() {
         const roomId = document.getElementById('newRoomId').value.trim();
-        if (roomId) window.location.href = `/dashboard/chat01/?rm=${encodeURIComponent(roomId)}`;
-    }
-
-    // 資料載入核心函式
-    async function loadRooms() {
-        const container = document.getElementById('roomList');
-        // 【修正】統一使用 auth_token
-        const token = localStorage.getItem('auth_token'); 
-        
-        try {
-            const res = await fetch('/api/chat/rooms', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!res.ok) throw new Error("API 回傳狀態錯誤: " + res.status);
-
-            const rooms = await res.json();
-            
-            if (rooms.length === 0) {
-                container.innerHTML = "<p>目前沒有聊天記錄。</p>";
-                return;
-            }
-            
-            container.innerHTML = rooms.map(r => `
-                <div class="room-item" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
-                    <strong>房間代號: ${r.room}</strong>
-                </div>
-            `).join('');
-            
-        } catch (e) {
-            console.error("載入房間清單錯誤:", e);
-            container.innerHTML = "無法載入房間清單，請確認登入狀態是否已過期。";
+        if (roomId) {
+            window.location.href = `/dashboard/chat01/?rm=${encodeURIComponent(roomId)}`;
+        } else {
+            alert("請輸入房間代號");
         }
     }
 
-    // 【關鍵修改】確保在 DOM 完全載入後才執行初始化邏輯
-    document.addEventListener("DOMContentLoaded", () => {
-        // 設定一個全域函數，讓 auth_check.js 驗證完成後呼叫
-        window.initChatPage = loadRooms;
+    // 為了保險起見，強制讓 body 在驗證完後顯示
+    // 如果 auth_check.js 沒設定好，這行保證頁面不會一片空白
+    window.addEventListener('load', () => {
+        document.body.style.visibility = 'visible';
     });
 </script>
 
