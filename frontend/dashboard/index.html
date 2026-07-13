@@ -54,15 +54,7 @@
         localStorage.clear();
         window.location.replace('/index.html');
     }
-
-    // 聊天室導向邏輯
-    function openChatRoom() {
-        const empId = localStorage.getItem('empId');
-        const empName = localStorage.getItem('empName');
-        const role = 'admin'; 
-        window.location.href = `/chat01.html?rm=general&i=${role}`;
-    }
-</script>
+ </script>
 
 </body>
 </html>
