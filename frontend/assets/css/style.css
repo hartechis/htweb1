@@ -65,6 +65,11 @@ body {
     font-weight: bold; 
 }
 
+/* 工號姓名顯示樣式 */
+#empIdDisplay { 
+    color: #002d72; 
+    font-weight: bold;
+}
 .sidebar ul li a:hover { background: #004a99; color: white; }
 
 /* 主內容區域 */
