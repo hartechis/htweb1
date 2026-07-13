@@ -1,3 +1,5 @@
+//functions/api/chat.js
+
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
