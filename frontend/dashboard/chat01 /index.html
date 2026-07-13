@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
         body { visibility: hidden; }
-        .room-item { cursor: pointer; padding: 15px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; transition: 0.2s; }
-        .room-item:hover { background: #f0f0f0; border-color: #002d72; }
+        .view-section { display: none; }
+        .active-view { display: block; }
     </style>
+
     <script src="/assets/js/auth_check.js"></script>
 </head>
 <body>
@@ -30,7 +31,6 @@
     <aside class="sidebar" id="sidebar">
         <ul>
             <li><a href="/dashboard/">⬅ 回到首頁</a></li>
-            <li style="border-bottom: 1px solid #004a99; margin: 5px 0;"></li>
             <li><a href="javascript:void(0);" onclick="scrollToSection('new-room')">新建聊天室</a></li>
             <li><a href="javascript:void(0);" onclick="scrollToSection('room-list')">現有房間列表</a></li>
         </ul>
@@ -38,8 +38,7 @@
 
     <main class="main-content">
         <h2>聊天管理中心</h2>
-        
-        <section id="new-room" style="margin-bottom: 40px;">
+         <section id="new-room" style="margin-bottom: 40px;">
             <h3>新建聊天室</h3>
             <div style="display: flex; gap: 10px; max-width: 400px;">
                 <input type="text" id="newRoomId" placeholder="輸入房間代號 (例如: sales-team)" style="padding: 10px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
