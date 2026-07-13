@@ -73,30 +73,26 @@
     }
 
     async function loadRooms() {
-    try {
-        // 從 LocalStorage 取得登入後的 token
-        const token = localStorage.getItem('token'); 
-        
-        const res = await fetch('/api/chat/rooms', {
-            method: 'GET',
-            headers: {
-                // 將 Token 帶入 Header，這樣後端的驗證機制就會認得您已登入
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-             }
-            // 確保 DOM 完全載入後才執行，避免找不到 HTML 元素的問題
-    document.addEventListener("DOMContentLoaded", loadRooms);
-        });
+        try {
+            const token = localStorage.getItem('token'); 
+            
+            const res = await fetch('/api/chat/rooms', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }); // 這裡補上 fetch 的結束括號
 
-        if (!res.ok) throw new Error("驗證失敗或請求錯誤");
+            if (!res.ok) throw new Error("驗證失敗或請求錯誤");
 
-        const rooms = await res.json();
-        const container = document.getElementById('roomList');
-        
-        if (rooms.length === 0) {
-            container.innerHTML = "<p>目前沒有聊天記錄。</p>";
-            return;
-        }
+            const rooms = await res.json();
+            const container = document.getElementById('roomList');
+            
+            if (rooms.length === 0) {
+                container.innerHTML = "<p>目前沒有聊天記錄。</p>";
+                return;
+            }
         
         container.innerHTML = rooms.map(r => `
             <div class="room-item" onclick="window.location.href='/dashboard/chat01/?rm=${encodeURIComponent(r.room)}'">
@@ -109,6 +105,8 @@
         document.getElementById('roomList').innerHTML = "無法載入房間清單，請確認是否已登入。";
     }
 }
+    // --- 正確的位置：移到函數外面 ---
+    document.addEventListener("DOMContentLoaded", loadRooms);
 </script>
 
 </body>
